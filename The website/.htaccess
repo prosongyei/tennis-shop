@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to sensitive hidden files (.env, .git, etc.)
+    RewriteRule ^\.(.*)$ - [F,L]
+
+    # Forward all web requests to Laravel public directory
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
