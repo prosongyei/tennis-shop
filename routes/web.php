@@ -24,7 +24,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/images/logo.png', function () {
     $path = public_path('images/logo.png');
     if (file_exists($path)) {
-        return response()->file($path, ['Content-Type' => 'image/png']);
+        return response()->file($path, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'no-cache, private',
+        ]);
     }
     abort(404);
 })->name('brand.logo');
@@ -92,6 +95,10 @@ Route::post('/payment/khqr/{orderNumber}/currency', [PaymentController::class, '
 Route::get('/payment/khqr/{orderNumber}/status', [PaymentController::class, 'checkStatus'])->name('payment.khqr.status');
 Route::post('/payment/simulate/{orderNumber}', [PaymentController::class, 'simulateBakongPay'])->name('payment.simulate');
 Route::post('/payment/upload-proof/{orderNumber}', [PaymentController::class, 'uploadProof'])->name('payment.upload-proof');
+Route::post('/payment/confirm/{orderNumber}', [PaymentController::class, 'confirmPayment'])->name('payment.confirm');
+
+// Universal Safe Logout Route (Customer & General)
+Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Customer Order Tracking & Invoices
 Route::get('/track-order', [OrderController::class, 'track'])->name('orders.track');
@@ -108,7 +115,6 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/my-account', [AuthController::class, 'profile'])->name('profile');
     Route::post('/my-account', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.my');
@@ -121,10 +127,10 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-// POS Staff Login
+// POS Staff Login & Safe Logout
 Route::get('/pos/login', [AuthController::class, 'showPosLogin'])->name('pos.login');
 Route::post('/pos/login', [AuthController::class, 'posLogin']);
-Route::post('/pos/logout', [AuthController::class, 'posLogout'])->name('pos.logout');
+Route::match(['get', 'post'], '/pos/logout', [AuthController::class, 'posLogout'])->name('pos.logout');
 
 // POS Terminal Operations (Cashier & Admin only)
 Route::middleware(['auth', 'role:cashier,admin'])->prefix('pos')->name('pos.')->group(function () {
@@ -141,10 +147,10 @@ Route::middleware(['auth', 'role:cashier,admin'])->prefix('pos')->name('pos.')->
 |--------------------------------------------------------------------------
 */
 
-// Admin Manager Login
+// Admin Manager Login & Safe Logout
 Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'adminLogin']);
-Route::post('/admin/logout', [AuthController::class, 'adminLogout'])->name('admin.logout');
+Route::match(['get', 'post'], '/admin/logout', [AuthController::class, 'adminLogout'])->name('admin.logout');
 
 // Admin Operations (Admin only)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {

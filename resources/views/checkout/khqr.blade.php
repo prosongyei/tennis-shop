@@ -47,8 +47,8 @@
                     <canvas id="khqr-canvas" class="w-full aspect-square transition-opacity duration-150 rounded-xl"></canvas>
 
                     <!-- Center Website Logo Inside QR (Zero-Space Full Fit) -->
-                    <div class="absolute inset-0 m-auto w-12 h-12 rounded-2xl bg-white shadow-md border-2 border-white flex items-center justify-center pointer-events-none p-0 overflow-hidden">
-                        <img src="{{ asset('images/logo_tight.png') }}" alt="Store Logo" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 m-auto w-12 h-12 rounded-2xl bg-white shadow-md border-2 border-white flex items-center justify-center pointer-events-none p-0.5 overflow-hidden">
+                        <img src="{{ route('brand.logo') }}" alt="Store Logo" class="w-full h-full object-contain">
                     </div>
                 </div>
 
@@ -58,6 +58,18 @@
                         SORSONGYEI SOY
                     </span>
                 </div>
+            </div>
+
+            <!-- Instant Payment Confirmation Button -->
+            <div class="space-y-2">
+                <form action="{{ route('payment.confirm', $order->order_number) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm shadow-xl shadow-emerald-500/20 transition transform active:scale-[0.98] flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        <span>I Have Completed Payment (Confirm Order)</span>
+                    </button>
+                </form>
+                <p class="text-[11px] text-center text-slate-400">After scanning in your banking app, tap above to confirm your order immediately.</p>
             </div>
 
             <!-- Real-Time Polling Status & 15-Minute Countdown -->
@@ -95,8 +107,9 @@
                     <form action="{{ route('payment.upload-proof', $order->order_number) }}" method="POST" enctype="multipart/form-data" class="pt-3 space-y-3">
                         @csrf
                         <input type="file" name="proof_image" accept="image/*" required class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-700">
-                        <button type="submit" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
-                            Submit Slip Screenshot
+                        <button type="submit" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition flex items-center justify-center gap-2">
+                            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                            <span>Submit Receipt & Confirm Order</span>
                         </button>
                     </form>
                 </details>

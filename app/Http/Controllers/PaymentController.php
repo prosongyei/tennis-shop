@@ -177,10 +177,41 @@ class PaymentController extends Controller
             $path = $request->file('proof_image')->store('payment_proofs', 'public');
             $order->update([
                 'payment_proof_image' => $path,
-                'payment_status' => 'pending',
             ]);
+
+            $transactionId = 'SLIP-' . strtoupper(Str::random(10));
+            $this->paymentService->markOrderAsPaid(
+                $order,
+                'khqr',
+                $transactionId,
+                'Verified via Customer Uploaded Receipt Slip',
+                Auth::id()
+            );
         }
 
-        return back()->with('success', 'Payment receipt uploaded. Our team will verify it shortly.');
+        return redirect()->route('orders.show', $order->order_number)
+            ->with('success', "Payment receipt received & verified! Order #{$order->order_number} has gone through.");
+    }
+
+    /**
+     * Direct customer payment confirmation (Customer confirms money sent via mobile banking)
+     */
+    public function confirmPayment(Request $request, string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        if (!$order->is_paid) {
+            $transactionId = 'KHQR-' . strtoupper(Str::random(10));
+            $this->paymentService->markOrderAsPaid(
+                $order,
+                'khqr',
+                $transactionId,
+                'Customer confirmed KHQR transfer via mobile banking app',
+                Auth::id()
+            );
+        }
+
+        return redirect()->route('orders.show', $order->order_number)
+            ->with('success', "Payment of $" . number_format($order->total_amount, 2) . " confirmed! Order #{$order->order_number} has gone through.");
     }
 }

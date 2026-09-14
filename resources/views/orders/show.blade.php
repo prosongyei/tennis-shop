@@ -38,6 +38,48 @@
         </div>
     </div>
 
+    @if($order->is_paid)
+        <!-- High-Confidence Payment Confirmed Banner -->
+        <div class="mb-8 p-5 sm:p-6 rounded-3xl bg-emerald-950/40 border border-emerald-500/40 flex items-start sm:items-center gap-4 shadow-xl shadow-emerald-500/10">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                <i data-lucide="badge-check" class="w-7 h-7 text-emerald-400"></i>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center gap-2.5">
+                    <h3 class="font-display font-black text-lg text-emerald-400">Payment Confirmed & Order Placed!</h3>
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">PAID & VERIFIED</span>
+                </div>
+                <p class="text-xs text-slate-300 mt-1">
+                    Your payment was successfully received and verified{{ $order->paid_at ? ' on ' . $order->paid_at->format('M d, Y - h:i A') : '' }}. Your order is confirmed and our team is now preparing your badminton equipment!
+                </p>
+            </div>
+        </div>
+    @elseif($order->payment_method === 'khqr')
+        <!-- Awaiting Payment Prompt with Direct 1-Click Confirmation -->
+        <div class="mb-8 p-5 rounded-3xl bg-amber-950/40 border border-amber-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+                    <i data-lucide="clock" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm text-white">Awaiting Payment Confirmation</h4>
+                    <p class="text-xs text-slate-400">If you have already scanned and transferred via ABA / Bakong, confirm below.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <a href="{{ route('payment.khqr', $order->order_number) }}" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="qr-code" class="w-4 h-4"></i> View QR
+                </a>
+                <form action="{{ route('payment.confirm', $order->order_number) }}" method="POST" class="flex-1 sm:flex-initial">
+                    @csrf
+                    <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 transition">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i> I Already Paid
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
+
     <!-- Fulfillment Status Steps -->
     <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 mb-8">
         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Fulfillment Progress</h3>
@@ -45,7 +87,7 @@
             @php
                 $steps = [
                     'pending' => '1. Order Placed',
-                    'confirmed' => '2. Confirmed',
+                    'confirmed' => ($order->is_paid ? '2. Confirmed & Paid' : '2. Confirmed'),
                     'processing' => '3. Packing & Stringing',
                     'shipped' => '4. In Transit',
                     'completed' => '5. Delivered',

@@ -84,7 +84,7 @@
             <div class="flex items-center justify-between h-20">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-2.5 group shrink-0 mr-4">
-                    <img src="{{ route('brand.logo') }}" alt="TosLengSey Logo" class="w-10 h-10 rounded-full object-cover shadow-md shadow-sky-500/20 border border-sky-400/40 group-hover:scale-105 transition bg-white p-0.5">
+                    <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey Logo" class="w-10 h-10 rounded-full object-contain shadow-md shadow-sky-500/20 border border-sky-400/40 group-hover:scale-105 transition bg-slate-900 p-0.5">
                     <div>
                         <span class="font-display font-black text-xl sm:text-2xl tracking-tight text-white group-hover:text-sky-400 transition block leading-tight">TosLengSey</span>
                         <p class="text-[8px] uppercase font-bold tracking-tight text-slate-400 whitespace-nowrap">Authentic Badminton Store</p>
@@ -229,7 +229,7 @@
                 <!-- Brand Info -->
                 <div class="space-y-4">
                     <div class="flex items-center gap-3">
-                        <img src="{{ route('brand.logo') }}" alt="TosLengSey Logo" class="w-10 h-10 rounded-full object-cover border border-sky-400/40 bg-white p-0.5">
+                        <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey Logo" class="w-10 h-10 rounded-full object-contain border border-sky-400/40 bg-slate-900 p-0.5">
                         <span class="font-display font-black text-xl text-white">TosLengSey <span class="text-sky-400">PRO</span></span>
                     </div>
                     <p class="text-xs leading-relaxed text-slate-400">

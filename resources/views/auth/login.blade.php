@@ -6,8 +6,8 @@
 <div class="max-w-md mx-auto px-4 py-16">
     <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl">
         <div class="text-center mb-8">
-            <div class="w-16 h-16 rounded-2xl bg-white/5 border border-sky-500/30 mx-auto flex items-center justify-center p-2 shadow-lg shadow-sky-500/10 mb-3">
-                <img src="{{ route('brand.logo') }}" alt="TosLengSey Logo" class="w-full h-full object-contain">
+            <div class="w-16 h-16 rounded-2xl bg-slate-950 border border-sky-500/30 mx-auto flex items-center justify-center p-1.5 shadow-lg shadow-sky-500/10 mb-3 overflow-hidden">
+                <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey Logo" class="w-full h-full object-contain">
             </div>
             <h1 class="font-display font-black text-2xl text-white tracking-tight">Customer Sign In</h1>
             <p class="text-xs text-slate-400 mt-1">Access your racquet stringing preferences and order history</p>

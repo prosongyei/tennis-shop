@@ -28,7 +28,7 @@
         <div class="flex items-start justify-between gap-6 pb-8 border-b-2 border-slate-900">
             <div>
                 <div class="flex items-center gap-3 mb-2">
-                    <img src="{{ route('brand.logo') }}" alt="TosLengSey" class="w-10 h-10 rounded-full object-cover border border-slate-300">
+                    <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey" class="w-10 h-10 rounded-full object-contain border border-slate-300">
                     <h1 class="text-2xl font-black tracking-tight text-slate-950">TOSLENGSEY TENNIS STORE</h1>
                 </div>
                 <p class="text-xs text-slate-600">#128 St. 2004, Sen Sok, Phnom Penh, Cambodia</p>

@@ -79,27 +79,27 @@ class Order extends Model
     public function getStatusBadgeAttribute(): string
     {
         return match ($this->order_status) {
-            'pending' => 'bg-amber-100 text-amber-800 border-amber-300',
-            'confirmed' => 'bg-blue-100 text-blue-800 border-blue-300',
-            'processing' => 'bg-indigo-100 text-indigo-800 border-indigo-300',
-            'ready_pickup' => 'bg-purple-100 text-purple-800 border-purple-300',
-            'shipped' => 'bg-cyan-100 text-cyan-800 border-cyan-300',
-            'delivered', 'completed' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
-            'cancelled', 'rejected' => 'bg-rose-100 text-rose-800 border-rose-300',
-            'refunded' => 'bg-slate-100 text-slate-800 border-slate-300',
-            default => 'bg-gray-100 text-gray-800 border-gray-300',
+            'pending' => 'bg-amber-500/20 text-amber-400 border-amber-500/40',
+            'confirmed' => 'bg-sky-500/20 text-sky-400 border-sky-500/40',
+            'processing' => 'bg-indigo-500/20 text-indigo-400 border-indigo-500/40',
+            'ready_pickup' => 'bg-purple-500/20 text-purple-400 border-purple-500/40',
+            'shipped' => 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40',
+            'delivered', 'completed' => 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
+            'cancelled', 'rejected' => 'bg-rose-500/20 text-rose-400 border-rose-500/40',
+            'refunded' => 'bg-slate-800 text-slate-300 border-slate-700',
+            default => 'bg-slate-800 text-slate-400 border-slate-700',
         };
     }
 
     public function getPaymentBadgeAttribute(): string
     {
         return match ($this->payment_status) {
-            'paid' => 'bg-emerald-100 text-emerald-800 border-emerald-300',
-            'pending' => 'bg-amber-100 text-amber-800 border-amber-300',
-            'failed' => 'bg-rose-100 text-rose-800 border-rose-300',
-            'cancelled' => 'bg-gray-100 text-gray-800 border-gray-300',
-            'refunded' => 'bg-purple-100 text-purple-800 border-purple-300',
-            default => 'bg-gray-100 text-gray-800 border-gray-300',
+            'paid' => 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
+            'pending' => 'bg-amber-500/20 text-amber-400 border-amber-500/40',
+            'failed' => 'bg-rose-500/20 text-rose-400 border-rose-500/40',
+            'cancelled' => 'bg-slate-800 text-slate-400 border-slate-700',
+            'refunded' => 'bg-purple-500/20 text-purple-400 border-purple-500/40',
+            default => 'bg-slate-800 text-slate-400 border-slate-700',
         };
     }
 }

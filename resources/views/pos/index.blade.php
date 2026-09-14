@@ -31,7 +31,7 @@
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-white/10 border border-slate-700 p-0.5 flex items-center justify-center">
-                    <img src="{{ route('brand.logo') }}" alt="TosLengSey" class="w-full h-full object-contain">
+                    <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey" class="w-full h-full object-contain">
                 </div>
                 <div>
                     <span class="font-display font-black text-white text-base tracking-tight">TOSLENGSEY <span class="text-sky-400">POS</span></span>

@@ -52,7 +52,7 @@
             <!-- Brand Logo -->
             <div class="flex items-center gap-3 mb-8 px-2">
                 <div class="w-10 h-10 rounded-xl bg-white/10 p-1 flex items-center justify-center border border-slate-700">
-                    <img src="{{ route('brand.logo') }}" alt="TosLengSey" class="w-full h-full object-contain">
+                    <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey" class="w-full h-full object-contain">
                 </div>
                 <div>
                     <span class="font-display font-black text-xl text-white tracking-tight">TOSLENGSEY <span class="text-sky-400">OPS</span></span>

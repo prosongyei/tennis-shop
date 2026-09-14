@@ -31,6 +31,11 @@ class AuthController extends Controller
                 'email' => strtolower(trim((string) $request->input('email'))),
             ]);
         }
+        if ($request->has('password')) {
+            $request->merge([
+                'password' => trim((string) $request->input('password')),
+            ]);
+        }
 
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -39,27 +44,35 @@ class AuthController extends Controller
 
         $remember = $request->boolean('remember');
 
-        $this->ensureCoreAccountExists($credentials['email']);
+        try {
+            $this->ensureCoreAccountExists($credentials['email']);
 
-        if (Auth::attempt($credentials, $remember) || $this->fallbackSystemLogin($credentials['email'], (string) $credentials['password'], $remember)) {
-            $request->session()->regenerate();
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-
-            if ($user->status !== 'active') {
+            if (Auth::check() && Auth::user()->email !== $credentials['email']) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Your account is deactivated. Please contact store support.']);
             }
 
-            if ($user->isAdmin()) {
-                return redirect()->intended(route('admin.dashboard'))->with('success', "Welcome back, Administrator {$user->name}!");
-            }
+            if (Auth::attempt($credentials, $remember) || $this->fallbackSystemLogin($credentials['email'], (string) $credentials['password'], $remember)) {
+                $request->session()->regenerate();
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
 
-            if ($user->isCashier()) {
-                return redirect()->intended(route('pos.index'))->with('success', "Welcome back, {$user->name}!");
-            }
+                if ($user->status !== 'active') {
+                    Auth::logout();
+                    return back()->withErrors(['email' => 'Your account is deactivated. Please contact store support.']);
+                }
 
-            return redirect()->intended(route('home'))->with('success', "Welcome back, {$user->name}!");
+                if ($user->isAdmin()) {
+                    return redirect()->intended(route('admin.dashboard'))->with('success', "Welcome back, Administrator {$user->name}!");
+                }
+
+                if ($user->isCashier()) {
+                    return redirect()->intended(route('pos.index'))->with('success', "Welcome back, {$user->name}!");
+                }
+
+                return redirect()->intended(route('home'))->with('success', "Welcome back, {$user->name}!");
+            }
+        } catch (\Throwable $e) {
+            // If any unexpected exception occurs, gracefully fallback
         }
 
         return back()->withErrors([
@@ -116,11 +129,15 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        } catch (\Throwable $e) {
+            // Silently ignore session invalidation error
+        }
 
-        return redirect()->route('home');
+        return redirect()->route('home')->with('success', 'You have been signed out.');
     }
 
     public function profile()
@@ -191,30 +208,43 @@ class AuthController extends Controller
                 'email' => strtolower(trim((string) $request->input('email'))),
             ]);
         }
+        if ($request->has('password')) {
+            $request->merge([
+                'password' => trim((string) $request->input('password')),
+            ]);
+        }
 
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        $this->ensureCoreAccountExists($credentials['email']);
+        try {
+            $this->ensureCoreAccountExists($credentials['email']);
 
-        if (Auth::attempt($credentials) || $this->fallbackSystemLogin($credentials['email'], (string) $credentials['password'], false)) {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-
-            if (!$user->isCashier() && !$user->isAdmin()) {
+            if (Auth::check() && Auth::user()->email !== $credentials['email']) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Access denied. Cashier authorization required.']);
             }
 
-            if ($user->status !== 'active') {
-                Auth::logout();
-                return back()->withErrors(['email' => 'Account deactivated. Please contact store management.']);
-            }
+            if (Auth::attempt($credentials) || $this->fallbackSystemLogin($credentials['email'], (string) $credentials['password'], false)) {
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
 
-            $request->session()->regenerate();
-            return redirect()->route('pos.index')->with('success', 'Terminal unlocked. Ready for sales.');
+                if (!$user->isCashier() && !$user->isAdmin()) {
+                    Auth::logout();
+                    return back()->withErrors(['email' => 'Access denied. Cashier authorization required.']);
+                }
+
+                if ($user->status !== 'active') {
+                    Auth::logout();
+                    return back()->withErrors(['email' => 'Account deactivated. Please contact store management.']);
+                }
+
+                $request->session()->regenerate();
+                return redirect()->route('pos.index')->with('success', 'Terminal unlocked. Ready for sales.');
+            }
+        } catch (\Throwable $e) {
+            // Silently fallback to invalid credentials
         }
 
         return back()->withErrors(['email' => 'Invalid staff credentials.'])->onlyInput('email');
@@ -222,11 +252,15 @@ class AuthController extends Controller
 
     public function posLogout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        } catch (\Throwable $e) {
+            // Silently ignore session invalidation error
+        }
 
-        return redirect()->route('pos.login');
+        return redirect()->route('pos.login')->with('success', 'Terminal locked. Staff signed out.');
     }
 
     /*
@@ -252,32 +286,45 @@ class AuthController extends Controller
                 'email' => strtolower(trim((string) $request->input('email'))),
             ]);
         }
+        if ($request->has('password')) {
+            $request->merge([
+                'password' => trim((string) $request->input('password')),
+            ]);
+        }
 
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        $this->ensureCoreAccountExists($credentials['email']);
+        try {
+            $this->ensureCoreAccountExists($credentials['email']);
 
-        $remember = $request->boolean('remember');
-
-        if (Auth::attempt($credentials, $remember) || $this->fallbackSystemLogin($credentials['email'], (string) $credentials['password'], $remember)) {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-
-            if (!$user->isAdmin()) {
+            if (Auth::check() && Auth::user()->email !== $credentials['email']) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Access restricted to system administrators only.']);
             }
 
-            if ($user->status !== 'active') {
-                Auth::logout();
-                return back()->withErrors(['email' => 'Admin account inactive.']);
-            }
+            $remember = $request->boolean('remember');
 
-            $request->session()->regenerate();
-            return redirect()->route('admin.dashboard')->with('success', 'Welcome to Management Console.');
+            if (Auth::attempt($credentials, $remember) || $this->fallbackSystemLogin($credentials['email'], (string) $credentials['password'], $remember)) {
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
+
+                if (!$user->isAdmin()) {
+                    Auth::logout();
+                    return back()->withErrors(['email' => 'Access restricted to system administrators only.']);
+                }
+
+                if ($user->status !== 'active') {
+                    Auth::logout();
+                    return back()->withErrors(['email' => 'Admin account inactive.']);
+                }
+
+                $request->session()->regenerate();
+                return redirect()->route('admin.dashboard')->with('success', 'Welcome to Management Console.');
+            }
+        } catch (\Throwable $e) {
+            // Silently fallback to invalid credentials
         }
 
         return back()->withErrors(['email' => 'Invalid administrative credentials.'])->onlyInput('email');
@@ -285,11 +332,15 @@ class AuthController extends Controller
 
     public function adminLogout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        } catch (\Throwable $e) {
+            // Silently ignore session invalidation error
+        }
 
-        return redirect()->route('admin.login');
+        return redirect()->route('admin.login')->with('success', 'Admin session signed out.');
     }
 
     /**

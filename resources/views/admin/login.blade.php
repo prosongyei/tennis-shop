@@ -15,8 +15,8 @@
     <div class="max-w-md w-full">
         <!-- Portal Header -->
         <div class="text-center mb-8">
-            <div class="w-16 h-16 rounded-2xl bg-white/10 border border-sky-500/30 p-2 text-sky-400 mx-auto flex items-center justify-center mb-3 shadow-lg shadow-sky-500/10">
-                <img src="{{ route('brand.logo') }}" alt="TosLengSey Logo" class="w-full h-full object-contain">
+            <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-sky-500/30 p-1.5 mx-auto flex items-center justify-center mb-3 shadow-lg shadow-sky-500/10 overflow-hidden">
+                <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey Logo" class="w-full h-full object-contain">
             </div>
             <h1 class="text-2xl font-black tracking-tight text-white font-['Outfit']">STORE MANAGEMENT PORTAL</h1>
             <p class="text-xs text-slate-400 mt-1">TosLengSey Operations & Inventory Back-Office</p>
