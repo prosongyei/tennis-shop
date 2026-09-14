@@ -102,16 +102,8 @@ class PaymentService
             ];
         }
 
-        // Optional simulation mode for development/testing
-        if (config('services.bakong.simulation_mode', false)) {
-            $simHash = 'SIM_' . strtoupper(bin2hex(random_bytes(16)));
-            $this->markOrderAsPaid($order, 'khqr', $simHash, 'Simulated Payment in Test Mode');
-            return [
-                'paid' => true,
-                'message' => 'Simulated test payment approved!',
-                'hash' => $simHash,
-            ];
-        }
+        // Check external NBC Bakong API if access token is configured
+        // Otherwise, order remains pending until merchant confirms via Telegram Bot or Admin panel
 
         // Throttle outbound requests: check external NBC API at most once every 5 seconds per order
         $cacheKey = 'bakong_check_throttle_' . $order->id;
