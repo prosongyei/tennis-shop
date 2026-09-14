@@ -35,11 +35,20 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
+            /** @var \App\Models\User $user */
             $user = Auth::user();
 
             if ($user->status !== 'active') {
                 Auth::logout();
                 return back()->withErrors(['email' => 'Your account is deactivated. Please contact store support.']);
+            }
+
+            if ($user->isAdmin()) {
+                return redirect()->intended(route('admin.dashboard'))->with('success', "Welcome back, Administrator {$user->name}!");
+            }
+
+            if ($user->isCashier()) {
+                return redirect()->intended(route('pos.index'))->with('success', "Welcome back, {$user->name}!");
             }
 
             return redirect()->intended(route('home'))->with('success', "Welcome back, {$user->name}!");

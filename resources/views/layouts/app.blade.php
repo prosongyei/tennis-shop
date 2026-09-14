@@ -147,6 +147,21 @@
                                         <p class="text-sm font-bold text-white truncate">{{ auth()->user()->email }}</p>
                                     </div>
 
+                                    @if(auth()->user()->isAdmin())
+                                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition mt-1">
+                                            <i data-lucide="layout-dashboard" class="w-4 h-4 text-indigo-400"></i> Admin Console
+                                        </a>
+                                        <a href="{{ route('pos.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition mt-1">
+                                            <i data-lucide="monitor" class="w-4 h-4 text-emerald-400"></i> POS Cashier Terminal
+                                        </a>
+                                        <div class="my-1 border-t border-slate-800"></div>
+                                    @elseif(auth()->user()->isCashier())
+                                        <a href="{{ route('pos.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition mt-1">
+                                            <i data-lucide="monitor" class="w-4 h-4 text-emerald-400"></i> POS Cashier Terminal
+                                        </a>
+                                        <div class="my-1 border-t border-slate-800"></div>
+                                    @endif
+
                                     <a href="{{ route('orders.my') }}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white mt-1">
                                         <i data-lucide="package" class="w-4 h-4 text-sky-400"></i> My Orders
                                     </a>
@@ -247,6 +262,8 @@
                         <li><a href="{{ route('orders.my') }}" class="hover:text-sky-400 transition">Customer Order History</a></li>
                         <li><a href="{{ route('cart.index') }}" class="hover:text-sky-400 transition">Shopping Cart & Checkout</a></li>
                         <li><a href="{{ route('login') }}" class="hover:text-sky-400 transition">Customer Account Login</a></li>
+                        <li><a href="{{ route('pos.login') }}" class="hover:text-emerald-400 transition font-medium">Cashier POS Terminal</a></li>
+                        <li><a href="{{ route('admin.login') }}" class="hover:text-indigo-400 transition font-medium">Store Admin Console</a></li>
                         <li><span class="text-slate-500">Same-Day Delivery across Phnom Penh</span></li>
                         <li><span class="text-slate-500">1-2 Days Express Nationwide Shipping</span></li>
                     </ul>
@@ -273,7 +290,13 @@
             </div>
 
             <div class="border-t border-slate-900 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-                <p>&copy; {{ date('Y') }} TosLengSey Badminton Store. All rights reserved.</p>
+                <div class="flex items-center gap-3">
+                    <p>&copy; {{ date('Y') }} TosLengSey Badminton Store. All rights reserved.</p>
+                    <span class="text-slate-700">|</span>
+                    <a href="{{ route('pos.login') }}" class="hover:text-emerald-400 transition">Cashier POS</a>
+                    <span class="text-slate-700">•</span>
+                    <a href="{{ route('admin.login') }}" class="hover:text-indigo-400 transition">Admin Console</a>
+                </div>
                 <div class="flex flex-wrap items-center gap-4">
                     <span class="text-slate-400 font-semibold">Accepted Payments:</span>
                     <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300 font-medium">Bakong KHQR</span>
