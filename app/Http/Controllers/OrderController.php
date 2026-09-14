@@ -37,8 +37,14 @@ class OrderController extends Controller
         $user = Auth::user();
 
         // Check customer permission if order is bound to a user
-        if ($order->user_id && $user && $user->id !== $order->user_id && !$user->isAdmin() && !$user->isCashier()) {
-            abort(403, 'Unauthorized access to this order.');
+        if ($order->user_id) {
+            if (!$user) {
+                if (session('last_order_number') !== $order->order_number) {
+                    return redirect()->guest(route('login'))->with('error', 'Please sign in to view your order.');
+                }
+            } elseif ($user->id !== $order->user_id && !$user->isAdmin() && !$user->isCashier()) {
+                abort(403, 'Unauthorized access to this order.');
+            }
         }
 
         return view('orders.show', compact('order'));
@@ -108,8 +114,17 @@ class OrderController extends Controller
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
-        if ($order->user_id && Auth::id() !== $order->user_id && (!$user || !$user->isAdmin())) {
-            abort(403);
+        if ($order->user_id) {
+            if (Auth::id() !== $order->user_id && (!$user || !$user->isAdmin())) {
+                abort(403, 'Unauthorized to cancel this order.');
+            }
+        } else {
+            $sessionOrder = session('last_order_number');
+            $providedPhone = preg_replace('/[^0-9]/', '', (string) $request->input('phone', ''));
+            $orderPhone = preg_replace('/[^0-9]/', '', (string) $order->customer_phone);
+            if ((!$user || !$user->isAdmin()) && $sessionOrder !== $order->order_number && (empty($providedPhone) || $providedPhone !== $orderPhone)) {
+                abort(403, 'Authorization required to cancel this order.');
+            }
         }
 
         try {

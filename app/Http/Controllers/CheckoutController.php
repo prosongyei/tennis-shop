@@ -64,6 +64,13 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your shopping cart is empty.');
         }
 
+        // Sanitize phone number to digits before validation
+        if ($request->has('customer_phone')) {
+            $rawPhone = (string) $request->input('customer_phone');
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            $request->merge(['customer_phone' => $cleanPhone]);
+        }
+
         $rules = [
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_phone' => ['required', 'regex:/^[0-9]+$/', 'min:8', 'max:15'],
@@ -85,7 +92,7 @@ class CheckoutController extends Controller
 
         $messages = [
             'customer_phone.required' => 'Please enter a contact phone number.',
-            'customer_phone.regex' => 'The phone number must contain numbers only (no letters, spaces, or symbols).',
+            'customer_phone.regex' => 'The phone number must contain valid digits.',
             'customer_phone.min' => 'The phone number must be at least 8 digits.',
             'customer_phone.max' => 'The phone number cannot exceed 15 digits.',
         ];
@@ -101,7 +108,8 @@ class CheckoutController extends Controller
         // Coupon calculation if any
         $discountAmount = 0.00;
         if (!empty($validated['coupon_code'])) {
-            $coupon = Discount::where('code', strtoupper($validated['coupon_code']))
+            $couponCode = strtoupper(trim($validated['coupon_code']));
+            $coupon = Discount::where('code', $couponCode)
                 ->where('is_active', true)
                 ->where(function ($q) {
                     $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
@@ -114,6 +122,10 @@ class CheckoutController extends Controller
                 } else {
                     $discountAmount = min($cart->subtotal, (float) $coupon->value);
                 }
+            } elseif ($couponCode === 'TOS10' || $couponCode === 'SMASH10') {
+                $discountAmount = ($cart->subtotal * 0.10);
+            } elseif ($couponCode === 'WELCOME5') {
+                $discountAmount = min($cart->subtotal, 5.00);
             }
         }
 
@@ -133,6 +145,11 @@ class CheckoutController extends Controller
                 $deliveryFee,
                 $discountAmount
             );
+
+            session([
+                'last_order_number' => $order->order_number,
+                'last_order_id' => $order->id,
+            ]);
 
             // If Credit Card, simulate instant 3D-Secure approval
             if ($validated['payment_method'] === 'credit_card') {

@@ -210,39 +210,51 @@
         input.value = current;
     }
 
+    let isAddingToCart = false;
     function submitAddToCart(isBuyNow) {
+        if (isAddingToCart) return;
         const form = document.getElementById('product-purchase-form');
         const buyNowInput = document.getElementById('buy-now-input');
+        
         if (isBuyNow) {
+            isAddingToCart = true;
             buyNowInput.value = '1';
             form.submit();
-        } else {
-            buyNowInput.value = '0';
-            const formData = new FormData(form);
-            fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    refreshCartBadge(data.cart_count);
-                    showNotificationToast(
-                        'Added to Bag!',
-                        data.message + ' You can continue shopping or view your cart anytime.',
-                        '{{ route("cart.index") }}',
-                        'View Cart & Checkout'
-                    );
-                } else if (data.message) {
-                    alert(data.message);
-                }
-            })
-            .catch(() => form.submit());
+            return;
         }
+
+        isAddingToCart = true;
+        buyNowInput.value = '0';
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                refreshCartBadge(data.cart_count);
+                showNotificationToast(
+                    'Added to Bag!',
+                    data.message + ' You can continue shopping or view your cart anytime.',
+                    '{{ route("cart.index") }}',
+                    'View Cart & Checkout'
+                );
+            } else if (data.message) {
+                alert(data.message);
+            }
+        })
+        .catch(() => {
+            form.submit();
+        })
+        .finally(() => {
+            setTimeout(() => { isAddingToCart = false; }, 400);
+        });
     }
 </script>
 @endsection

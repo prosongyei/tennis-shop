@@ -33,18 +33,19 @@ class GoogleSheetService
             $service = new GoogleSheets($client);
 
             $row = [[
-                $order->order_number,
-                $order->customer_name,
-                $order->customer_phone,
-                $order->customer_email,
-                number_format((float) $order->total_amount, 2, '.', ''),
-                strtoupper($order->payment_method),
-                strtoupper($order->payment_status),
-                strtoupper($order->order_status),
-                $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
+                (string) ($order->order_number ?? ''),
+                (string) ($order->customer_name ?? 'Guest'),
+                (string) ($order->customer_phone ?? ''),
+                (string) ($order->customer_email ?? ''),
+                (string) number_format((float) ($order->total_amount ?? 0), 2, '.', ''),
+                (string) strtoupper($order->payment_method ?? 'CASH'),
+                (string) strtoupper($order->payment_status ?? 'PENDING'),
+                (string) strtoupper($order->order_status ?? 'COMPLETED'),
+                (string) ($order->created_at ? $order->created_at->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s')),
             ]];
 
-            $body = new ValueRange(['values' => $row]);
+            $body = new ValueRange();
+            $body->setValues($row);
 
             $service->spreadsheets_values->append(
                 $spreadsheetId,

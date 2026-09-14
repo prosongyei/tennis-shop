@@ -29,6 +29,35 @@ Route::get('/images/logo.png', function () {
     abort(404);
 })->name('brand.logo');
 
+// Health Check & DB Auto-Setup Diagnostics
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'php' => PHP_VERSION]);
+});
+
+Route::get('/debug-db', function () {
+    if (!app()->isLocal()) {
+        abort(403, 'Database diagnostics are disabled in production.');
+    }
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbName = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
+        $tables = \Illuminate\Support\Facades\DB::select('SHOW TABLES');
+        $tableCount = count($tables);
+        $output = "<h3>Connected successfully to Database: " . e($dbName) . "</h3><p>Tables count: " . $tableCount . "</p>";
+
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output .= "<p><strong>Migrate:</strong> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "</p>";
+
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        $output .= "<p><strong>Seed:</strong> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "</p>";
+
+        $output .= '<p><a href="/" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">Go to Storefront Homepage</a></p>';
+        return $output;
+    } catch (\Throwable $e) {
+        return "<h3>Database Connection Error:</h3><pre>" . e($e->getMessage()) . "</pre>";
+    }
+});
+
 // Public Catalog & Product Detail
 Route::get('/', [ShopController::class, 'index'])->name('home');
 Route::get('/shop', [ShopController::class, 'catalog'])->name('shop.catalog');

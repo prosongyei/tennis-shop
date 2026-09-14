@@ -60,6 +60,12 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        if ($request->has('phone')) {
+            $rawPhone = (string) $request->input('phone');
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            $request->merge(['phone' => $cleanPhone]);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
@@ -69,7 +75,7 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ], [
             'phone.required' => 'Please enter a contact phone number.',
-            'phone.regex' => 'The phone number must contain numbers only (no letters, spaces, or symbols).',
+            'phone.regex' => 'The phone number must contain valid digits.',
             'phone.min' => 'The phone number must be at least 8 digits.',
             'phone.max' => 'The phone number cannot exceed 15 digits.',
         ]);
@@ -112,6 +118,12 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        if ($request->has('phone')) {
+            $rawPhone = (string) $request->input('phone');
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+            $request->merge(['phone' => $cleanPhone]);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'regex:/^[0-9]+$/', 'min:8', 'max:15'],
@@ -120,7 +132,7 @@ class AuthController extends Controller
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ], [
             'phone.required' => 'Please enter a contact phone number.',
-            'phone.regex' => 'The phone number must contain numbers only (no letters, spaces, or symbols).',
+            'phone.regex' => 'The phone number must contain valid digits.',
             'phone.min' => 'The phone number must be at least 8 digits.',
             'phone.max' => 'The phone number cannot exceed 15 digits.',
         ]);

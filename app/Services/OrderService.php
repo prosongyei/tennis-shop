@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -66,7 +67,7 @@ class OrderService
             // 2. Create the Order
             $order = Order::create([
                 'order_number' => $orderNumber,
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'cashier_id' => null,
                 'customer_name' => $customerData['name'],
                 'customer_phone' => $customerData['phone'],
@@ -118,15 +119,24 @@ class OrderService
             // 5. Clear customer cart
             $cart->items()->delete();
 
-            // 6. Send Telegram Notification
-            $freshOrder = $order->fresh(['items']);
-            $this->telegramService->sendNewOrderAlert($freshOrder);
-
-            // 7. Log to Google Sheet
-            $this->googleSheetService->appendOrder($freshOrder);
-
             return $order;
         });
+
+        // Send Telegram & Google Sheet notifications asynchronously / outside DB transaction
+        try {
+            $freshOrder = $order->fresh(['items']);
+            $this->telegramService->sendNewOrderAlert($freshOrder);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Telegram order alert failed: " . $e->getMessage());
+        }
+
+        try {
+            $this->googleSheetService->appendOrder($order);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Google Sheet append failed: " . $e->getMessage());
+        }
+
+        return $order;
     }
 
     /**
@@ -158,7 +168,7 @@ class OrderService
             $order = Order::create([
                 'order_number' => $orderNumber,
                 'user_id' => $saleData['customer_id'] ?? null,
-                'cashier_id' => auth()->id(),
+                'cashier_id' => Auth::id(),
                 'customer_name' => $saleData['customer_name'] ?? 'Walk-in Customer',
                 'customer_phone' => $saleData['customer_phone'] ?? 'N/A',
                 'customer_email' => null,
@@ -207,7 +217,7 @@ class OrderService
             if ($paymentMethod === 'khqr') {
                 $this->paymentService->generateKhqr($order, $totalAmount, 'USD');
             } elseif ($paymentMethod === 'cash_store') {
-                $this->paymentService->markOrderAsPaid($order, 'cash_store', 'CASH-' . time(), 'Cash payment at register', auth()->id());
+                $this->paymentService->markOrderAsPaid($order, 'cash_store', 'CASH-' . time(), 'Cash payment at register', Auth::id());
             }
 
             return $order;
@@ -241,8 +251,12 @@ class OrderService
                     );
                 }
             }
-
-            $this->telegramService->sendOrderCancelledAlert($order, $reason);
         });
+
+        try {
+            $this->telegramService->sendOrderCancelledAlert($order, $reason);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Telegram order cancelled alert failed: " . $e->getMessage());
+        }
     }
 }

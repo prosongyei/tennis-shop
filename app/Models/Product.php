@@ -88,10 +88,16 @@ class Product extends Model
 
     public function getTotalStockAttribute(): int
     {
+        if ($this->relationLoaded('variants')) {
+            return $this->variants->isNotEmpty()
+                ? (int) $this->variants->sum('stock_quantity')
+                : (int) $this->stock_quantity;
+        }
+
         if ($this->variants()->exists()) {
             return (int) $this->variants()->sum('stock_quantity');
         }
-        return $this->stock_quantity;
+        return (int) $this->stock_quantity;
     }
 
     public function getIsOutOfStockAttribute(): bool
@@ -106,6 +112,10 @@ class Product extends Model
 
     public function getAverageRatingAttribute(): float
     {
+        if ($this->relationLoaded('reviews')) {
+            return (float) ($this->reviews->isNotEmpty() ? $this->reviews->avg('rating') : 5.0);
+        }
+
         return (float) ($this->reviews()->avg('rating') ?: 5.0);
     }
 

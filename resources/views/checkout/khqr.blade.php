@@ -187,6 +187,7 @@
         durationSeconds--;
         if (durationSeconds <= 0) {
             clearInterval(timerInterval);
+            if (typeof pollInterval !== 'undefined') clearInterval(pollInterval);
             timerDisplay.innerText = "00:00 (Expired)";
             document.getElementById('polling-status-text').innerText = "QR Code expired. Please reorder.";
             return;
@@ -196,7 +197,7 @@
         timerDisplay.innerText = `${m}:${s}`;
     }, 1000);
 
-    // 4. Automated Polling Every 2 Seconds (Fast & Non-blocking)
+    // 4. Automated Polling Every 3 Seconds (Throttled & Non-blocking)
     let isPolling = false;
     const pollInterval = setInterval(() => {
         if (isPolling) return;
@@ -219,6 +220,6 @@
             .finally(() => {
                 isPolling = false;
             });
-    }, 2000);
+    }, 3000);
 </script>
 @endsection

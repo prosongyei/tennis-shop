@@ -30,17 +30,6 @@ class AppServiceProvider extends ServiceProvider
             @mkdir($logoDir, 0755, true);
         }
 
-        // Fix database category icons so shoes never use shield
-        try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('categories')) {
-                \Illuminate\Support\Facades\DB::table('categories')
-                    ->where('slug', 'badminton-shoes')
-                    ->where('icon', 'shield')
-                    ->update(['icon' => 'footprints']);
-            }
-        } catch (\Throwable $e) {
-            // Silently ignore if DB not ready
-        }
 
         // Share Wishlist count with all views
         view()->composer('*', function ($view) {

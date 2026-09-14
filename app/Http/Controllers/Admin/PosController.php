@@ -41,14 +41,23 @@ class PosController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('q');
+        $categoryId = $request->input('category') ?: $request->input('category_id');
 
-        $products = Product::with(['brand', 'variants'])
-            ->where('status', 'active')
-            ->where(function ($q) use ($query) {
+        $productsQuery = Product::with(['brand', 'variants'])
+            ->where('status', 'active');
+
+        if (!empty($categoryId)) {
+            $productsQuery->where('category_id', $categoryId);
+        }
+
+        if (!empty($query)) {
+            $productsQuery->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                   ->orWhere('sku', 'like', "%{$query}%");
-            })
-            ->take(20)
+            });
+        }
+
+        $products = $productsQuery->take(30)
             ->get()
             ->map(function ($p) {
                 return [

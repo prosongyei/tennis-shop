@@ -367,17 +367,47 @@
             currentDiscount = subtotal * 0.10;
             document.getElementById('discount-row').style.display = 'flex';
             document.getElementById('discount-display').innerText = '-$' + currentDiscount.toFixed(2);
-            alert('Coupon ' + code + ' Applied! 10% Discount given.');
+            if (typeof showNotificationToast === 'function') {
+                showNotificationToast('Coupon Applied!', '10% discount has been applied to your order total.');
+            } else {
+                alert('Coupon ' + code + ' applied! 10% discount given.');
+            }
         } else if (code === 'WELCOME5') {
             currentDiscount = 5.00;
             document.getElementById('discount-row').style.display = 'flex';
             document.getElementById('discount-display').innerText = '-$' + currentDiscount.toFixed(2);
-            alert('Coupon WELCOME5 Applied! $5.00 Discount given.');
+            if (typeof showNotificationToast === 'function') {
+                showNotificationToast('Coupon Applied!', '$5.00 discount has been applied to your order.');
+            } else {
+                alert('Coupon WELCOME5 applied! $5.00 discount given.');
+            }
         } else {
-            alert('Invalid coupon code. Try TOS10 or WELCOME5.');
+            alert('Invalid coupon code. Try TOS10, SMASH10, or WELCOME5.');
         }
         recalculate();
     }
+
+    // Double-submission protection
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('checkout-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const btn = document.getElementById('btn-checkout-submit');
+                if (btn) {
+                    if (btn.dataset.submitting === 'true') {
+                        e.preventDefault();
+                        return false;
+                    }
+                    btn.dataset.submitting = 'true';
+                    btn.disabled = true;
+                    btn.classList.add('opacity-75', 'pointer-events-none');
+                    const span = btn.querySelector('span');
+                    if (span) span.innerText = 'Submitting Order...';
+                    form.submit();
+                }
+            });
+        }
+    });
 
     function togglePaymentFields(method) {
         const cardForm = document.getElementById('credit-card-form');

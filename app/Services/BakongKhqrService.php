@@ -102,9 +102,19 @@ class BakongKhqrService
             ];
         }
 
+        // Throttle outbound requests per MD5: at most once every 5 seconds
+        $cacheKey = 'bakong_khqr_throttle_' . substr($md5, 0, 16);
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return [
+                'paid' => false,
+                'message' => 'Awaiting payment confirmation...',
+            ];
+        }
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 5);
+
         try {
             $response = Http::withToken($token)
-                ->timeout(8)
+                ->timeout(2.5)
                 ->post($endpoint, [
                     'md5' => $md5,
                 ]);

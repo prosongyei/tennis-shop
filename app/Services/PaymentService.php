@@ -113,42 +113,45 @@ class PaymentService
             ];
         }
 
-        $token = Setting::get('bakong_access_token') ?: config('services.bakong.access_token') ?: config('services.bakong.api_token');
-        $primaryUrl = Setting::get('bakong_api_url') ?: config('services.bakong.api_url', 'https://api-bakong.nbc.gov.kh/v1');
-        $devUrl = config('services.bakong.dev_url', 'https://sit-api-bakong.nbc.gov.kh/v1');
-        $prodUrl = config('services.bakong.prod_url', 'https://api-bakong.nbc.gov.kh/v1');
+        // Throttle outbound requests: check external NBC API at most once every 5 seconds per order
+        $cacheKey = 'bakong_check_throttle_' . $order->id;
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return [
+                'paid' => false,
+                'message' => 'Awaiting payment confirmation via mobile banking...',
+            ];
+        }
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 5);
 
-        $endpoints = array_unique(array_filter([$primaryUrl, $prodUrl, $devUrl]));
+        $token = Setting::get('bakong_access_token') ?: config('services.bakong.access_token') ?: config('services.bakong.api_token');
+        $activeUrl = Setting::get('bakong_api_url') ?: config('services.bakong.api_url') ?: config('services.bakong.dev_url', 'https://sit-api-bakong.nbc.gov.kh/v1');
 
         if (!empty($token) && !empty($order->khqr_md5)) {
-            foreach ($endpoints as $apiUrl) {
-                // Ensure endpoint does not duplicate /check_transaction_by_md5
-                $cleanUrl = rtrim($apiUrl, '/');
-                $endpoint = str_ends_with($cleanUrl, '/check_transaction_by_md5')
-                    ? $cleanUrl
-                    : "{$cleanUrl}/check_transaction_by_md5";
+            $cleanUrl = rtrim($activeUrl, '/');
+            $endpoint = str_ends_with($cleanUrl, '/check_transaction_by_md5')
+                ? $cleanUrl
+                : "{$cleanUrl}/check_transaction_by_md5";
 
-                try {
-                    $response = Http::withToken($token)
-                        ->timeout(8)
-                        ->post($endpoint, [
-                            'md5' => $order->khqr_md5,
-                        ]);
+            try {
+                $response = Http::withToken($token)
+                    ->timeout(2.5)
+                    ->post($endpoint, [
+                        'md5' => $order->khqr_md5,
+                    ]);
 
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        if (isset($data['responseCode']) && $data['responseCode'] === 0 && !empty($data['data']['hash'])) {
-                            $this->markOrderAsPaid($order, 'khqr', $data['data']['hash'], 'Auto-verified via Bakong API');
-                            return [
-                                'paid' => true,
-                                'message' => 'Payment confirmed via Bakong!',
-                                'hash' => $data['data']['hash'],
-                            ];
-                        }
+                if ($response->successful()) {
+                    $data = $response->json();
+                    if (isset($data['responseCode']) && $data['responseCode'] === 0 && !empty($data['data']['hash'])) {
+                        $this->markOrderAsPaid($order, 'khqr', $data['data']['hash'], 'Auto-verified via Bakong API');
+                        return [
+                            'paid' => true,
+                            'message' => 'Payment confirmed via Bakong!',
+                            'hash' => $data['data']['hash'],
+                        ];
                     }
-                } catch (\Exception $e) {
-                    Log::warning("Bakong API check failed on {$endpoint}: " . $e->getMessage());
                 }
+            } catch (\Exception $e) {
+                Log::warning("Bakong API check failed on {$endpoint}: " . $e->getMessage());
             }
         }
 
