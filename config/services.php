@@ -19,8 +19,8 @@ return [
     ],
 
     'telegram' => [
-        'enabled' => env('TELEGRAM_ENABLED', false),
-        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'enabled' => env('TELEGRAM_ENABLED', true),
+        'bot_token' => env('TELEGRAM_BOT_TOKEN', '8851308730:AAFIs5Dyu4exg6mXw0JLN1jbOuQyvgucrPc'),
         'chat_id' => env('TELEGRAM_CHAT_ID'),
     ],
 

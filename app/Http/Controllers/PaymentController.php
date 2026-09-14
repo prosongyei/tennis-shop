@@ -163,7 +163,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Customer can upload receipt screenshot if paid via app
+     * Customer uploads receipt screenshot: forward to Telegram bot for admin confirmation
      */
     public function uploadProof(Request $request, string $orderNumber)
     {
@@ -177,41 +177,51 @@ class PaymentController extends Controller
             $path = $request->file('proof_image')->store('payment_proofs', 'public');
             $order->update([
                 'payment_proof_image' => $path,
+                'payment_status' => 'pending',
             ]);
 
-            $transactionId = 'SLIP-' . strtoupper(Str::random(10));
-            $this->paymentService->markOrderAsPaid(
-                $order,
-                'khqr',
-                $transactionId,
-                'Verified via Customer Uploaded Receipt Slip',
-                Auth::id()
-            );
+            // Notify Store Admin on Telegram with the receipt photo & [Confirm] button
+            try {
+                app(\App\Services\TelegramService::class)->sendSlipUploadedAlert($order);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Telegram slip alert failed: " . $e->getMessage());
+            }
         }
 
         return redirect()->route('orders.show', $order->order_number)
-            ->with('success', "Payment receipt received & verified! Order #{$order->order_number} has gone through.");
+            ->with('success', "Payment receipt uploaded! Our store manager has received your slip on Telegram and will confirm your order shortly.");
     }
 
     /**
-     * Direct customer payment confirmation (Customer confirms money sent via mobile banking)
+     * Customer manual confirmation removed - only authorized staff / Telegram bot can confirm
      */
     public function confirmPayment(Request $request, string $orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
 
-        if (!$order->is_paid) {
-            $transactionId = 'KHQR-' . strtoupper(Str::random(10));
+        // If staff / admin user is logged in, allow confirmation
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        if ($user && ($user->isAdmin() || $user->isCashier())) {
+            $transactionId = 'STAFF-' . strtoupper(Str::random(8));
             $this->paymentService->markOrderAsPaid(
                 $order,
                 'khqr',
                 $transactionId,
-                'Customer confirmed KHQR transfer via mobile banking app',
-                Auth::id()
+                'Confirmed by staff ' . $user->name,
+                $user->id
             );
+
+            return redirect()->route('orders.show', $order->order_number)
+                ->with('success', "Payment confirmed by staff! Order #{$order->order_number} is approved.");
         }
 
+        // Notify admin on Telegram that customer is waiting
+        try {
+            app(\App\Services\TelegramService::class)->sendNewOrderAlert($order);
+        } catch (\Throwable $e) {}
+
         return redirect()->route('orders.show', $order->order_number)
-            ->with('success', "Payment of $" . number_format($order->total_amount, 2) . " confirmed! Order #{$order->order_number} has gone through.");
+            ->with('info', "A notification has been sent to our store manager on Telegram to verify your payment.");
     }
 }

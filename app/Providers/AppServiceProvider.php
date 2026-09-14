@@ -119,6 +119,18 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
+                // Guarantee Telegram bot settings exist
+                if (Schema::hasTable('settings')) {
+                    \App\Models\Setting::updateOrCreate(
+                        ['key' => 'telegram_bot_token'],
+                        ['value' => '8851308730:AAFIs5Dyu4exg6mXw0JLN1jbOuQyvgucrPc', 'group' => 'telegram', 'description' => 'Confirmation Buddy Bot Token']
+                    );
+                    \App\Models\Setting::updateOrCreate(
+                        ['key' => 'telegram_enabled'],
+                        ['value' => '1', 'group' => 'telegram', 'description' => 'Enable Telegram Order & Payment Alerts']
+                    );
+                }
+
                 Cache::put('core_users_verified_v3', true, now()->addDay());
             }
         } catch (\Throwable $e) {

@@ -18,6 +18,9 @@ Route::get('/payments/check-status/{orderNumber}', [PaymentController::class, 'c
 // Quick product preview
 Route::get('/products/{id}/quick-view', [ShopController::class, 'quickView']);
 
+// Telegram Bot Webhook & Health Check (Confirmation Buddy)
+Route::match(['get', 'post'], '/telegram/webhook', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('api.telegram.webhook');
+
 // User details if token authenticated
 Route::get('/user', function (Request $request) {
     return $request->user();

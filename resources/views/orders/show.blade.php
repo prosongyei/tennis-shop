@@ -55,7 +55,7 @@
             </div>
         </div>
     @elseif($order->payment_method === 'khqr')
-        <!-- Awaiting Payment Prompt with Direct 1-Click Confirmation -->
+        <!-- Awaiting Merchant Verification -->
         <div class="mb-8 p-5 rounded-3xl bg-amber-950/40 border border-amber-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
@@ -63,19 +63,13 @@
                 </div>
                 <div>
                     <h4 class="font-bold text-sm text-white">Awaiting Payment Confirmation</h4>
-                    <p class="text-xs text-slate-400">If you have already scanned and transferred via ABA / Bakong, confirm below.</p>
+                    <p class="text-xs text-slate-400">Our store manager has been notified on Telegram. Once verified, your status will update automatically.</p>
                 </div>
             </div>
             <div class="flex items-center gap-2 w-full sm:w-auto">
-                <a href="{{ route('payment.khqr', $order->order_number) }}" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
-                    <i data-lucide="qr-code" class="w-4 h-4"></i> View QR
+                <a href="{{ route('payment.khqr', $order->order_number) }}" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-red-600/20">
+                    <i data-lucide="qr-code" class="w-4 h-4"></i> View QR / Upload Slip
                 </a>
-                <form action="{{ route('payment.confirm', $order->order_number) }}" method="POST" class="flex-1 sm:flex-initial">
-                    @csrf
-                    <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 transition">
-                        <i data-lucide="check-circle-2" class="w-4 h-4"></i> I Already Paid
-                    </button>
-                </form>
             </div>
         </div>
     @endif

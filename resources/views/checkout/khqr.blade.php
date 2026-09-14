@@ -60,16 +60,15 @@
                 </div>
             </div>
 
-            <!-- Instant Payment Confirmation Button -->
-            <div class="space-y-2">
-                <form action="{{ route('payment.confirm', $order->order_number) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm shadow-xl shadow-emerald-500/20 transition transform active:scale-[0.98] flex items-center justify-center gap-2">
-                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                        <span>I Have Completed Payment (Confirm Order)</span>
-                    </button>
-                </form>
-                <p class="text-[11px] text-center text-slate-400">After scanning in your banking app, tap above to confirm your order immediately.</p>
+            <!-- Merchant Verification Status Notice -->
+            <div class="p-4 rounded-2xl bg-sky-950/30 border border-sky-800/40 flex items-center gap-3.5">
+                <div class="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/30">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                </div>
+                <div class="text-xs">
+                    <p class="font-bold text-white">Merchant Verification Active</p>
+                    <p class="text-slate-400 text-[11px] mt-0.5">Please transfer via your banking app or upload your receipt slip below. Once confirmed by our manager via Telegram, this screen will automatically refresh.</p>
+                </div>
             </div>
 
             <!-- Real-Time Polling Status & 15-Minute Countdown -->
@@ -109,7 +108,7 @@
                         <input type="file" name="proof_image" accept="image/*" required class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-700">
                         <button type="submit" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition flex items-center justify-center gap-2">
                             <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                            <span>Submit Receipt & Confirm Order</span>
+                            <span>Upload Receipt for Manager Approval</span>
                         </button>
                     </form>
                 </details>
