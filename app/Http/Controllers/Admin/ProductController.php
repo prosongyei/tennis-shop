@@ -48,22 +48,40 @@ class ProductController extends Controller
             }
         }
 
+        $this->ensureCategoriesAndBrandsExist();
         $products = $query->latest()->paginate(15)->withQueryString();
-        $categories = Category::all();
-        $brands = Brand::all();
+        $categories = Category::orderBy('name')->get();
+        $brands = Brand::orderBy('name')->get();
 
         return view('admin.products.index', compact('products', 'categories', 'brands'));
     }
 
     public function create()
     {
-        $categories = Category::all();
-        $brands = Brand::all();
+        $this->ensureCategoriesAndBrandsExist();
+        $categories = Category::orderBy('name')->get();
+        $brands = Brand::orderBy('name')->get();
         return view('admin.products.form', compact('categories', 'brands'));
     }
 
     public function store(Request $request)
     {
+        // Support on-the-fly category creation if entered
+        if ($request->filled('new_category_name')) {
+            $cName = trim((string) $request->input('new_category_name'));
+            $cSlug = Str::slug($cName);
+            $cat = Category::firstOrCreate(['name' => $cName], ['slug' => $cSlug, 'icon' => 'tag', 'is_active' => true]);
+            $request->merge(['category_id' => $cat->id]);
+        }
+
+        // Support on-the-fly brand creation if entered
+        if ($request->filled('new_brand_name')) {
+            $bName = trim((string) $request->input('new_brand_name'));
+            $bSlug = Str::slug($bName);
+            $br = Brand::firstOrCreate(['name' => $bName], ['slug' => $bSlug, 'is_active' => true]);
+            $request->merge(['brand_id' => $br->id]);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['required', 'string', 'max:50', 'unique:products,sku'],
@@ -131,9 +149,10 @@ class ProductController extends Controller
 
     public function edit(int $id)
     {
-        $product = Product::with(['variants', 'images'])->findOrFail($id);
-        $categories = Category::all();
-        $brands = Brand::all();
+        $this->ensureCategoriesAndBrandsExist();
+        $product = Product::with('variants')->findOrFail($id);
+        $categories = Category::orderBy('name')->get();
+        $brands = Brand::orderBy('name')->get();
 
         return view('admin.products.form', compact('product', 'categories', 'brands'));
     }
@@ -141,6 +160,20 @@ class ProductController extends Controller
     public function update(Request $request, int $id)
     {
         $product = Product::findOrFail($id);
+
+        if ($request->filled('new_category_name')) {
+            $cName = trim((string) $request->input('new_category_name'));
+            $cSlug = Str::slug($cName);
+            $cat = Category::firstOrCreate(['name' => $cName], ['slug' => $cSlug, 'icon' => 'tag', 'is_active' => true]);
+            $request->merge(['category_id' => $cat->id]);
+        }
+
+        if ($request->filled('new_brand_name')) {
+            $bName = trim((string) $request->input('new_brand_name'));
+            $bSlug = Str::slug($bName);
+            $br = Brand::firstOrCreate(['name' => $bName], ['slug' => $bSlug, 'is_active' => true]);
+            $request->merge(['brand_id' => $br->id]);
+        }
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -217,10 +250,8 @@ class ProductController extends Controller
         $qty = (int) $request->input('quantity');
         $reason = $request->input('reason', 'Manual Admin Inventory Adjustment');
 
-        if ($qty > 0) {
-            $this->inventoryService->addStock($product, null, $qty, $reason, 'manual_adjustment');
-        } elseif ($qty < 0) {
-            $this->inventoryService->deductStock($product, null, abs($qty), $reason, 'manual_adjustment');
+        if ($qty !== 0) {
+            $this->inventoryService->adjustStock($product, null, $qty, $reason);
         }
 
         return back()->with('success', "Inventory adjusted for {$product->name}. Current stock: {$product->fresh()->stock_quantity}");
@@ -232,5 +263,120 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
+    }
+
+    /**
+     * Quick Store for New Category (via AJAX modal or direct form)
+     */
+    public function storeCategory(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'icon' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $name = trim($validated['name']);
+        $slug = Str::slug($name);
+        $originalSlug = $slug;
+        $counter = 1;
+        while (Category::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter++;
+        }
+
+        $category = Category::create([
+            'name' => $name,
+            'slug' => $slug,
+            'description' => $validated['description'] ?? null,
+            'icon' => $validated['icon'] ?? 'tag',
+            'is_active' => true,
+        ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'category' => $category,
+                'message' => "Category '{$category->name}' created successfully!",
+            ]);
+        }
+
+        return back()->with('success', "Category '{$category->name}' added successfully.");
+    }
+
+    /**
+     * Quick Store for New Brand (via AJAX modal or direct form)
+     */
+    public function storeBrand(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $name = trim($validated['name']);
+        $slug = Str::slug($name);
+        $originalSlug = $slug;
+        $counter = 1;
+        while (Brand::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter++;
+        }
+
+        $brand = Brand::create([
+            'name' => $name,
+            'slug' => $slug,
+            'description' => $validated['description'] ?? null,
+            'is_active' => true,
+        ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'brand' => $brand,
+                'message' => "Brand '{$brand->name}' created successfully!",
+            ]);
+        }
+
+        return back()->with('success', "Brand '{$brand->name}' added successfully.");
+    }
+
+    /**
+     * Auto-ensure baseline categories and brands exist
+     */
+    protected function ensureCategoriesAndBrandsExist(): void
+    {
+        try {
+            if (Category::count() === 0) {
+                $categories = [
+                    ['name' => 'Badminton Rackets', 'slug' => 'badminton-rackets', 'icon' => 'zap', 'description' => 'Professional & intermediate racquets.'],
+                    ['name' => 'Badminton Shoes', 'slug' => 'badminton-shoes', 'icon' => 'footprints', 'description' => 'Court shoes with Power Cushion grip.'],
+                    ['name' => 'Shuttlecocks', 'slug' => 'shuttlecocks', 'icon' => 'feather', 'description' => 'BWF tournament feather and nylon shuttlecocks.'],
+                    ['name' => 'Strings & Tension', 'slug' => 'strings-tension', 'icon' => 'activity', 'description' => 'High-repulsion strings.'],
+                    ['name' => 'Bags & Backpacks', 'slug' => 'bags-backpacks', 'icon' => 'package', 'description' => 'Multi-racket tournament bags.'],
+                    ['name' => 'Grips & Accessories', 'slug' => 'grips-accessories', 'icon' => 'tag', 'description' => 'Tacky overgrips and accessories.'],
+                    ['name' => 'Tennis & Court Gear', 'slug' => 'tennis-court-gear', 'icon' => 'award', 'description' => 'Tennis equipment.'],
+                ];
+                foreach ($categories as $c) {
+                    Category::updateOrCreate(['slug' => $c['slug']], $c);
+                }
+            }
+
+            if (Brand::count() === 0) {
+                $brands = [
+                    ['name' => 'Yonex', 'slug' => 'yonex', 'description' => 'World #1 equipment manufacturer.'],
+                    ['name' => 'Victor', 'slug' => 'victor', 'description' => 'Premium performance gear trusted by world champions.'],
+                    ['name' => 'Li-Ning', 'slug' => 'li-ning', 'description' => 'Innovative materials and lightning speed frames.'],
+                    ['name' => 'Mizuno', 'slug' => 'mizuno', 'description' => 'Japanese craftsmanship court shoes and rackets.'],
+                    ['name' => 'Ashaway', 'slug' => 'ashaway', 'description' => 'Industry leaders in strings.'],
+                    ['name' => 'Wilson', 'slug' => 'wilson', 'description' => 'World-class tennis and badminton equipment.'],
+                    ['name' => 'Babolat', 'slug' => 'babolat', 'description' => 'High performance tournament racquets.'],
+                    ['name' => 'Head', 'slug' => 'head', 'description' => 'Precision tennis racquets and court gear.'],
+                ];
+                foreach ($brands as $b) {
+                    Brand::updateOrCreate(['slug' => $b['slug']], $b);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Silently continue
+        }
     }
 }

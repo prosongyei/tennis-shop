@@ -42,21 +42,35 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Category *</label>
-                    <select name="category_id" required class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Category *</label>
+                        <button type="button" onclick="openCategoryModal()" class="text-xs text-lime-400 hover:text-lime-300 font-semibold flex items-center gap-1 transition cursor-pointer">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> + Add New Category
+                        </button>
+                    </div>
+                    <select id="category_id_select" name="category_id" required class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400">
+                        <option value="" disabled {{ empty(old('category_id', $product->category_id ?? '')) ? 'selected' : '' }}>-- Select Category --</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}" {{ old('category_id', $product->category_id ?? '') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                         @endforeach
                     </select>
+                    @error('category_id') <p class="text-xs text-rose-400 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Brand *</label>
-                    <select name="brand_id" required class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Brand *</label>
+                        <button type="button" onclick="openBrandModal()" class="text-xs text-lime-400 hover:text-lime-300 font-semibold flex items-center gap-1 transition cursor-pointer">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> + Add New Brand
+                        </button>
+                    </div>
+                    <select id="brand_id_select" name="brand_id" required class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400">
+                        <option value="" disabled {{ empty(old('brand_id', $product->brand_id ?? '')) ? 'selected' : '' }}>-- Select Brand --</option>
                         @foreach($brands as $br)
                             <option value="{{ $br->id }}" {{ old('brand_id', $product->brand_id ?? '') == $br->id ? 'selected' : '' }}>{{ $br->name }}</option>
                         @endforeach
                     </select>
+                    @error('brand_id') <p class="text-xs text-rose-400 mt-1">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -208,4 +222,196 @@
         </button>
     </form>
 </div>
+
+<!-- Quick Add Category Modal -->
+<div id="category-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="font-display font-bold text-lg text-white flex items-center gap-2">
+                <i data-lucide="folder-plus" class="w-5 h-5 text-lime-400"></i> Add New Category
+            </h3>
+            <button type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+        </div>
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Category Name *</label>
+                <input type="text" id="new-cat-name" placeholder="e.g. Tennis Racquets, Pickleball" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Description (Optional)</label>
+                <textarea id="new-cat-desc" rows="2" placeholder="Brief overview of products in this category" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400"></textarea>
+            </div>
+            <div id="cat-modal-error" class="text-xs text-rose-400 hidden"></div>
+        </div>
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
+                Cancel
+            </button>
+            <button type="button" id="save-cat-btn" onclick="saveNewCategory()" class="px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold shadow-lg shadow-lime-500/20 transition cursor-pointer flex items-center gap-1.5">
+                <span>Save Category</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Brand Modal -->
+<div id="brand-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="font-display font-bold text-lg text-white flex items-center gap-2">
+                <i data-lucide="tag" class="w-5 h-5 text-lime-400"></i> Add New Brand
+            </h3>
+            <button type="button" onclick="closeBrandModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+        </div>
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Brand Name *</label>
+                <input type="text" id="new-brand-name" placeholder="e.g. Karakal, Dunlop, Wilson" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Description (Optional)</label>
+                <textarea id="new-brand-desc" rows="2" placeholder="Brand overview" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400"></textarea>
+            </div>
+            <div id="brand-modal-error" class="text-xs text-rose-400 hidden"></div>
+        </div>
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <button type="button" onclick="closeBrandModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
+                Cancel
+            </button>
+            <button type="button" id="save-brand-btn" onclick="saveNewBrand()" class="px-5 py-2.5 rounded-xl bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold shadow-lg shadow-lime-500/20 transition cursor-pointer flex items-center gap-1.5">
+                <span>Save Brand</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCategoryModal() {
+        document.getElementById('new-cat-name').value = '';
+        document.getElementById('new-cat-desc').value = '';
+        document.getElementById('cat-modal-error').classList.add('hidden');
+        document.getElementById('category-modal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('new-cat-name').focus(), 50);
+    }
+
+    function closeCategoryModal() {
+        document.getElementById('category-modal').classList.add('hidden');
+    }
+
+    function saveNewCategory() {
+        const nameInput = document.getElementById('new-cat-name');
+        const descInput = document.getElementById('new-cat-desc');
+        const errorDiv = document.getElementById('cat-modal-error');
+        const saveBtn = document.getElementById('save-cat-btn');
+
+        const name = nameInput.value.trim();
+        if (!name) {
+            errorDiv.textContent = 'Please enter a category name.';
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+
+        errorDiv.classList.add('hidden');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = 'Saving...';
+
+        fetch('{{ route("admin.categories.store") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                name: name,
+                description: descInput.value.trim()
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.category) {
+                const select = document.getElementById('category_id_select');
+                const opt = new Option(data.category.name, data.category.id, true, true);
+                select.add(opt);
+                closeCategoryModal();
+            } else {
+                errorDiv.textContent = data.message || 'Failed to save category.';
+                errorDiv.classList.remove('hidden');
+            }
+        })
+        .catch(err => {
+            errorDiv.textContent = 'Network error while saving category.';
+            errorDiv.classList.remove('hidden');
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = 'Save Category';
+            if (window.lucide) lucide.createIcons();
+        });
+    }
+
+    function openBrandModal() {
+        document.getElementById('new-brand-name').value = '';
+        document.getElementById('new-brand-desc').value = '';
+        document.getElementById('brand-modal-error').classList.add('hidden');
+        document.getElementById('brand-modal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('new-brand-name').focus(), 50);
+    }
+
+    function closeBrandModal() {
+        document.getElementById('brand-modal').classList.add('hidden');
+    }
+
+    function saveNewBrand() {
+        const nameInput = document.getElementById('new-brand-name');
+        const descInput = document.getElementById('new-brand-desc');
+        const errorDiv = document.getElementById('brand-modal-error');
+        const saveBtn = document.getElementById('save-brand-btn');
+
+        const name = nameInput.value.trim();
+        if (!name) {
+            errorDiv.textContent = 'Please enter a brand name.';
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+
+        errorDiv.classList.add('hidden');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = 'Saving...';
+
+        fetch('{{ route("admin.brands.store") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                name: name,
+                description: descInput.value.trim()
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.brand) {
+                const select = document.getElementById('brand_id_select');
+                const opt = new Option(data.brand.name, data.brand.id, true, true);
+                select.add(opt);
+                closeBrandModal();
+            } else {
+                errorDiv.textContent = data.message || 'Failed to save brand.';
+                errorDiv.classList.remove('hidden');
+            }
+        })
+        .catch(err => {
+            errorDiv.textContent = 'Network error while saving brand.';
+            errorDiv.classList.remove('hidden');
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = 'Save Brand';
+            if (window.lucide) lucide.createIcons();
+        });
+    }
+</script>
 @endsection

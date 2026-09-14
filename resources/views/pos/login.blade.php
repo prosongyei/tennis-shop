@@ -31,26 +31,13 @@
                 </div>
             @endif
 
-            <!-- Demo Credentials Quick Helper -->
-            <div class="mb-5 p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between text-xs">
-                <div>
-                    <span class="text-sky-300 font-bold block flex items-center gap-1.5">
-                        <i data-lucide="monitor" class="w-3.5 h-3.5 text-sky-400"></i> Cashier Terminal Credentials
-                    </span>
-                    <span class="text-slate-400 text-[11px] font-mono">cashier@badminton.com / password123</span>
-                </div>
-                <button type="button" onclick="fillCashierDemo()" class="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-md shadow-sky-600/30 transition cursor-pointer flex items-center gap-1">
-                    <i data-lucide="zap" class="w-3 h-3"></i> Auto-Fill
-                </button>
-            </div>
-
             <form action="{{ route('pos.login') }}" method="POST" class="space-y-4">
                 @csrf
 
                 <div>
                     <label for="email" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Staff Email / Cashier ID</label>
                     <div class="relative">
-                        <input type="email" id="email" name="email" value="{{ old('email', 'cashier@badminton.com') }}" required autofocus placeholder="cashier@badminton.com" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-sky-500 transition">
+                        <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="cashier@badminton.com" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-sky-500 transition">
                         <i data-lucide="user" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
                     </div>
                     @error('email') <p class="text-xs text-rose-400 mt-1">{{ $message }}</p> @enderror
@@ -82,11 +69,6 @@
         </div>
     </div>
     <script>
-        function fillCashierDemo() {
-            document.getElementById('email').value = 'cashier@badminton.com';
-            document.getElementById('password').value = 'password123';
-        }
-
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             if (!input) return;

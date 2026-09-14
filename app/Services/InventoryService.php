@@ -132,6 +132,14 @@ class InventoryService
     }
 
     /**
+     * Add stock helper
+     */
+    public function addStock(Product $product, ?ProductVariant $variant, int $quantity, string $reason = 'Manual Stock Addition', ?string $refType = 'adjustment', ?int $refId = null): InventoryTransaction
+    {
+        return $this->adjustStock($product, $variant, $quantity, $reason);
+    }
+
+    /**
      * Manual stock adjustment by Admin
      */
     public function adjustStock(Product $product, ?ProductVariant $variant, int $quantityChange, string $reason): InventoryTransaction

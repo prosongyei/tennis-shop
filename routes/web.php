@@ -161,6 +161,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('orders/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('orders.verify-payment');
     Route::post('orders/{id}/cancel', [AdminOrderController::class, 'cancel'])->name('orders.cancel');
 
+    // Category & Brand Management / Quick Creation
+    Route::post('categories', [AdminProductController::class, 'storeCategory'])->name('categories.store');
+    Route::post('brands', [AdminProductController::class, 'storeBrand'])->name('brands.store');
+
     // Store & Bank Gateway Settings
     Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [AdminSettingController::class, 'update'])->name('settings.update');

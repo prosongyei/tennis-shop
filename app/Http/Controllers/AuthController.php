@@ -307,7 +307,7 @@ class AuthController extends Controller
                 User::create([
                     'name' => 'Store Administrator',
                     'email' => 'admin@badminton.com',
-                    'password' => Hash::make('password123'),
+                    'password' => Hash::make('MyTeamMy099'),
                     'role' => 'admin',
                     'status' => 'active',
                     'phone' => '+855 12 888 999',
@@ -317,7 +317,7 @@ class AuthController extends Controller
                 User::create([
                     'name' => 'Main Register Cashier',
                     'email' => 'cashier@badminton.com',
-                    'password' => Hash::make('password123'),
+                    'password' => Hash::make('MyTeamMy099'),
                     'role' => 'cashier',
                     'status' => 'active',
                     'phone' => '+855 98 777 666',
@@ -340,13 +340,13 @@ class AuthController extends Controller
     }
 
     /**
-     * Fallback login mechanism for predefined system demo accounts
+     * Fallback login mechanism for predefined system accounts
      */
     protected function fallbackSystemLogin(string $email, string $password, bool $remember = false): bool
     {
         $systemAccounts = [
-            'admin@badminton.com' => ['password123', 'password', 'admin', 'admin123'],
-            'cashier@badminton.com' => ['password123', 'password', 'cashier', 'cashier123'],
+            'admin@badminton.com' => ['MyTeamMy099', 'password123', 'password'],
+            'cashier@badminton.com' => ['MyTeamMy099', 'password123', 'password'],
             'customer@badminton.com' => ['password123', 'password'],
         ];
 

@@ -31,26 +31,13 @@
                 </div>
             @endif
 
-            <!-- Demo Credentials Quick Helper -->
-            <div class="mb-5 p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between text-xs">
-                <div>
-                    <span class="text-indigo-300 font-bold block flex items-center gap-1.5">
-                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-400"></i> Store Admin Credentials
-                    </span>
-                    <span class="text-slate-400 text-[11px] font-mono">admin@badminton.com / password123</span>
-                </div>
-                <button type="button" onclick="fillAdminDemo()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/30 transition cursor-pointer flex items-center gap-1">
-                    <i data-lucide="zap" class="w-3 h-3"></i> Auto-Fill
-                </button>
-            </div>
-
             <form action="{{ route('admin.login') }}" method="POST" class="space-y-4">
                 @csrf
 
                 <div>
                     <label for="email" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Administrator Email</label>
                     <div class="relative">
-                        <input type="email" id="email" name="email" value="{{ old('email', 'admin@badminton.com') }}" required autofocus placeholder="admin@badminton.com" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-indigo-500 transition">
+                        <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="admin@badminton.com" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-indigo-500 transition">
                         <i data-lucide="mail" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
                     </div>
                     @error('email') <p class="text-xs text-rose-400 mt-1">{{ $message }}</p> @enderror
@@ -90,11 +77,6 @@
         </div>
     </div>
     <script>
-        function fillAdminDemo() {
-            document.getElementById('email').value = 'admin@badminton.com';
-            document.getElementById('password').value = 'password123';
-        }
-
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             if (!input) return;

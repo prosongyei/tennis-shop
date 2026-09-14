@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '+855 12 888 999',
             'address' => 'St. 2004, Sen Sok',
             'city' => 'Phnom Penh',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('MyTeamMy099'),
             'role' => 'admin',
             'status' => 'active',
         ]);
@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '+855 98 777 666',
             'address' => 'Toul Kork',
             'city' => 'Phnom Penh',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('MyTeamMy099'),
             'role' => 'cashier',
             'status' => 'active',
         ]);

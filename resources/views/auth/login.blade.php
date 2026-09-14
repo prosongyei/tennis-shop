@@ -13,27 +13,6 @@
             <p class="text-xs text-slate-400 mt-1">Access your racquet stringing preferences and order history</p>
         </div>
 
-        <!-- Demo Accounts Quick Fill Helper -->
-        <div class="mb-5 p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-xs">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sky-300 font-bold flex items-center gap-1.5">
-                    <i data-lucide="key" class="w-3.5 h-3.5 text-sky-400"></i> Fast Demo Login
-                </span>
-                <span class="text-slate-400 text-[10px]">Click to auto-fill</span>
-            </div>
-            <div class="grid grid-cols-3 gap-1.5">
-                <button type="button" onclick="fillLoginDemo('customer@badminton.com', 'password123')" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium transition text-center cursor-pointer border border-slate-700/60 hover:border-sky-400">
-                    Customer
-                </button>
-                <button type="button" onclick="fillLoginDemo('cashier@badminton.com', 'password123')" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 text-[11px] font-medium transition text-center cursor-pointer border border-slate-700/60 hover:border-emerald-400">
-                    Cashier
-                </button>
-                <button type="button" onclick="fillLoginDemo('admin@badminton.com', 'password123')" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-medium transition text-center cursor-pointer border border-slate-700/60 hover:border-indigo-400">
-                    Admin
-                </button>
-            </div>
-        </div>
-
         <form action="{{ route('login') }}" method="POST" class="space-y-4">
             @csrf
 
@@ -82,11 +61,6 @@
 </div>
 
 <script>
-    function fillLoginDemo(email, pass) {
-        document.getElementById('email').value = email;
-        document.getElementById('password').value = pass;
-    }
-
     function togglePasswordVisibility(inputId, btn) {
         const input = document.getElementById(inputId);
         if (!input) return;
