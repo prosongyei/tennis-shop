@@ -31,13 +31,26 @@
                 </div>
             @endif
 
-            <form action="{{ url('/pos/login') }}" method="POST" class="space-y-4">
+            <!-- Demo Credentials Quick Helper -->
+            <div class="mb-5 p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between text-xs">
+                <div>
+                    <span class="text-sky-300 font-bold block flex items-center gap-1.5">
+                        <i data-lucide="monitor" class="w-3.5 h-3.5 text-sky-400"></i> Cashier Terminal Credentials
+                    </span>
+                    <span class="text-slate-400 text-[11px] font-mono">cashier@badminton.com / password123</span>
+                </div>
+                <button type="button" onclick="fillCashierDemo()" class="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-md shadow-sky-600/30 transition cursor-pointer flex items-center gap-1">
+                    <i data-lucide="zap" class="w-3 h-3"></i> Auto-Fill
+                </button>
+            </div>
+
+            <form action="{{ route('pos.login') }}" method="POST" class="space-y-4">
                 @csrf
 
                 <div>
                     <label for="email" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Staff Email / Cashier ID</label>
                     <div class="relative">
-                        <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="cashier@badminton.com" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-sky-500 transition">
+                        <input type="email" id="email" name="email" value="{{ old('email', 'cashier@badminton.com') }}" required autofocus placeholder="cashier@badminton.com" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-sky-500 transition">
                         <i data-lucide="user" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
                     </div>
                     @error('email') <p class="text-xs text-rose-400 mt-1">{{ $message }}</p> @enderror
@@ -46,22 +59,46 @@
                 <div>
                     <label for="password" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Security PIN / Password</label>
                     <div class="relative">
-                        <input type="password" id="password" name="password" required placeholder="••••••••" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-sky-500 transition">
+                        <input type="password" id="password" name="password" required placeholder="••••••••" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 pr-10 focus:outline-none focus:border-sky-500 transition">
                         <i data-lucide="lock" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
+                        <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-white transition focus:outline-none" title="Show or hide password" aria-label="Toggle password visibility">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm shadow-lg shadow-sky-600/20 hover:scale-[1.01] transition flex items-center justify-center gap-2 mt-2">
+                <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm shadow-lg shadow-sky-600/20 hover:scale-[1.01] transition flex items-center justify-center gap-2 mt-2 cursor-pointer">
                     <i data-lucide="unlock" class="w-4 h-4"></i>
                     <span>Unlock Register Terminal</span>
                 </button>
             </form>
 
-            <div class="mt-6 pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
-                Staff Support: Ext 104 • Store Manager Telegram: @TosLengSeyKh
+            <div class="mt-6 pt-6 border-t border-slate-800 text-center text-xs text-slate-500 flex items-center justify-between">
+                <a href="{{ route('home') }}" class="text-slate-400 hover:text-sky-400 transition flex items-center gap-1">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Storefront
+                </a>
+                <span>Terminal Support: Ext 104</span>
             </div>
         </div>
     </div>
-    <script>lucide.createIcons();</script>
+    <script>
+        function fillCashierDemo() {
+            document.getElementById('email').value = 'cashier@badminton.com';
+            document.getElementById('password').value = 'password123';
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            btn.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>`;
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
+        lucide.createIcons();
+    </script>
 </body>
 </html>

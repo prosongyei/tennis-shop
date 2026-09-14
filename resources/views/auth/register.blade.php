@@ -56,16 +56,26 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="password" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Password</label>
-                    <input type="password" id="password" name="password" required class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-400 transition" placeholder="••••••••">
+                    <div class="relative">
+                        <input type="password" id="password" name="password" required class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:border-sky-400 transition" placeholder="••••••••">
+                        <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-white transition focus:outline-none" title="Show or hide password" aria-label="Toggle password visibility">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                     @error('password') <p class="text-xs text-rose-400 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="password_confirmation" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Confirm Password</label>
-                    <input type="password" id="password_confirmation" name="password_confirmation" required class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-sky-400 transition" placeholder="••••••••">
+                    <div class="relative">
+                        <input type="password" id="password_confirmation" name="password_confirmation" required class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:border-sky-400 transition" placeholder="••••••••">
+                        <button type="button" onclick="togglePasswordVisibility('password_confirmation', this)" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-white transition focus:outline-none" title="Show or hide password" aria-label="Toggle password confirmation visibility">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-display font-black text-sm tracking-wide shadow-lg shadow-sky-600/20 hover:scale-[1.01] transition mt-2">
+            <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-display font-black text-sm tracking-wide shadow-lg shadow-sky-600/20 hover:scale-[1.01] transition mt-2 cursor-pointer">
                 Create Free Account
             </button>
         </form>
@@ -75,4 +85,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>`;
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    }
+</script>
 @endsection
+

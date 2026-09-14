@@ -31,13 +31,26 @@
                 </div>
             @endif
 
-            <form action="{{ url('/admin/login') }}" method="POST" class="space-y-4">
+            <!-- Demo Credentials Quick Helper -->
+            <div class="mb-5 p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between text-xs">
+                <div>
+                    <span class="text-indigo-300 font-bold block flex items-center gap-1.5">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-400"></i> Store Admin Credentials
+                    </span>
+                    <span class="text-slate-400 text-[11px] font-mono">admin@badminton.com / password123</span>
+                </div>
+                <button type="button" onclick="fillAdminDemo()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/30 transition cursor-pointer flex items-center gap-1">
+                    <i data-lucide="zap" class="w-3 h-3"></i> Auto-Fill
+                </button>
+            </div>
+
+            <form action="{{ route('admin.login') }}" method="POST" class="space-y-4">
                 @csrf
 
                 <div>
                     <label for="email" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Administrator Email</label>
                     <div class="relative">
-                        <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="admin@badminton.com" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-indigo-500 transition">
+                        <input type="email" id="email" name="email" value="{{ old('email', 'admin@badminton.com') }}" required autofocus placeholder="admin@badminton.com" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-indigo-500 transition">
                         <i data-lucide="mail" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
                     </div>
                     @error('email') <p class="text-xs text-rose-400 mt-1">{{ $message }}</p> @enderror
@@ -46,30 +59,54 @@
                 <div>
                     <label for="password" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Administrative Password</label>
                     <div class="relative">
-                        <input type="password" id="password" name="password" required placeholder="••••••••" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-indigo-500 transition">
+                        <input type="password" id="password" name="password" required placeholder="••••••••" class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-3 pl-10 pr-10 focus:outline-none focus:border-indigo-500 transition">
                         <i data-lucide="lock" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
+                        <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-white transition focus:outline-none" title="Show or hide password" aria-label="Toggle password visibility">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between text-xs text-slate-400">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="remember" class="rounded border-slate-700 bg-slate-950 text-indigo-500 focus:ring-indigo-500">
+                        <input type="checkbox" name="remember" class="rounded border-slate-700 bg-slate-950 text-indigo-500 focus:ring-indigo-500" checked>
                         <span>Keep me logged in</span>
                     </label>
                     <span class="text-slate-500">Restricted Access</span>
                 </div>
 
-                <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/20 hover:scale-[1.01] transition flex items-center justify-center gap-2 mt-2">
+                <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/20 hover:scale-[1.01] transition flex items-center justify-center gap-2 mt-2 cursor-pointer">
                     <i data-lucide="key" class="w-4 h-4"></i>
                     <span>Access Executive Console</span>
                 </button>
             </form>
 
-            <div class="mt-6 pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
-                Authorized Personnel Only • IP Logged & Monitored
+            <div class="mt-6 pt-6 border-t border-slate-800 text-center text-xs text-slate-500 flex items-center justify-between">
+                <a href="{{ route('home') }}" class="text-slate-400 hover:text-sky-400 transition flex items-center gap-1">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Storefront
+                </a>
+                <span>Authorized Personnel Only</span>
             </div>
         </div>
     </div>
-    <script>lucide.createIcons();</script>
+    <script>
+        function fillAdminDemo() {
+            document.getElementById('email').value = 'admin@badminton.com';
+            document.getElementById('password').value = 'password123';
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            btn.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>`;
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
+        lucide.createIcons();
+    </script>
 </body>
 </html>
