@@ -129,9 +129,16 @@ class AppServiceProvider extends ServiceProvider
                         ['key' => 'telegram_enabled'],
                         ['value' => '1', 'group' => 'telegram', 'description' => 'Enable Telegram Order & Payment Alerts']
                     );
+                    $existingChat = \App\Models\Setting::where('key', 'telegram_chat_id')->first();
+                    if (!$existingChat || empty($existingChat->value) || $existingChat->value === '6646751752') {
+                        \App\Models\Setting::updateOrCreate(
+                            ['key' => 'telegram_chat_id'],
+                            ['value' => '-5475494678', 'group' => 'telegram', 'description' => 'Primary Telegram Alert Group Chat ID']
+                        );
+                    }
                 }
 
-                Cache::put('core_users_verified_v3', true, now()->addDay());
+                Cache::put('core_users_verified_v4', true, now()->addDay());
             }
         } catch (\Throwable $e) {
             // Silently ignore if DB connection isn't ready

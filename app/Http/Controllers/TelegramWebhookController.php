@@ -109,9 +109,11 @@ class TelegramWebhookController extends Controller
             $this->answerCallback($botToken, $callbackId, "✅ Order #{$orderNumber} confirmed as PAID!", false);
 
             // Edit Telegram message to update status and remove action buttons
+            $safeCustomerName = htmlspecialchars($order->customer_name, ENT_QUOTES, 'UTF-8');
+            $safeCustomerPhone = htmlspecialchars($order->customer_phone, ENT_QUOTES, 'UTF-8');
             $newText = "✅ <b>PAYMENT CONFIRMED & APPROVED!</b>\n\n"
                 . "<b>Order:</b> #{$order->order_number}\n"
-                . "<b>Customer:</b> {$order->customer_name} ({$order->customer_phone})\n"
+                . "<b>Customer:</b> {$safeCustomerName} ({$safeCustomerPhone})\n"
                 . "<b>Total Paid:</b> <b>$" . number_format($order->total_amount, 2) . "</b>\n"
                 . "<b>Method:</b> " . strtoupper(str_replace('_', ' ', $order->payment_method)) . "\n"
                 . "<b>Confirmed At:</b> " . now()->format('d M Y, h:i A') . "\n"
@@ -121,8 +123,8 @@ class TelegramWebhookController extends Controller
             $updatedButtons = [
                 'inline_keyboard' => [
                     [
-                        ['text' => "📄 View Invoice", 'url' => url("/orders/invoice/{$order->order_number}")],
-                        ['text' => "⚙️ Admin Orders", 'url' => url("/admin/orders")],
+                        ['text' => "📄 View Invoice", 'url' => $this->telegramService->getInvoiceUrl($order->order_number)],
+                        ['text' => "⚙️ Admin Orders", 'url' => $this->telegramService->getAdminOrdersUrl()],
                     ]
                 ]
             ];
@@ -150,9 +152,10 @@ class TelegramWebhookController extends Controller
 
                 $this->answerCallback($botToken, $callbackId, "❌ Payment rejected for Order #{$orderNumber}.", false);
 
+                $safeCustName = htmlspecialchars($order->customer_name, ENT_QUOTES, 'UTF-8');
                 $rejectText = "❌ <b>PAYMENT REJECTED BY ADMIN</b>\n\n"
                     . "<b>Order:</b> #{$order->order_number}\n"
-                    . "<b>Customer:</b> {$order->customer_name}\n"
+                    . "<b>Customer:</b> {$safeCustName}\n"
                     . "<b>Amount:</b> $" . number_format($order->total_amount, 2) . "\n"
                     . "<b>Status:</b> PAYMENT FAILED / REJECTED\n"
                     . "<b>Time:</b> " . now()->format('d M Y, h:i A');

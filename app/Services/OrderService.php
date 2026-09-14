@@ -40,7 +40,7 @@ class OrderService
             throw new Exception("Shopping cart is empty.");
         }
 
-        return DB::transaction(function () use ($cart, $customerData, $paymentMethod, $deliveryFee, $discountAmount) {
+        $order = DB::transaction(function () use ($cart, $customerData, $paymentMethod, $deliveryFee, $discountAmount) {
             $subtotal = 0.00;
 
             // 1. Pre-validate stock for all items

@@ -209,7 +209,7 @@
         timerDisplay.innerText = `${m}:${s}`;
     }, 1000);
 
-    // 4. Automated Polling Every 3 Seconds (Throttled & Non-blocking)
+    // 4. Automated Polling Every 2 Seconds (Throttled & Non-blocking)
     let isPolling = false;
     const pollInterval = setInterval(() => {
         if (isPolling) return;
@@ -221,17 +221,17 @@
                 if (data.paid) {
                     clearInterval(pollInterval);
                     clearInterval(timerInterval);
-                    document.getElementById('polling-status-text').innerText = "Payment Verified via ABA! Redirecting...";
+                    document.getElementById('polling-status-text').innerText = "Payment Confirmed & Verified! Redirecting...";
                     document.getElementById('polling-status-text').className = "text-emerald-400 font-bold";
                     setTimeout(() => {
                         window.location.href = data.redirect_url || '{{ route("orders.show", $order->order_number) }}';
-                    }, 800);
+                    }, 600);
                 }
             })
             .catch(() => {})
             .finally(() => {
                 isPolling = false;
             });
-    }, 3000);
+    }, 2000);
 </script>
 @endsection

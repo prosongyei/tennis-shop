@@ -213,7 +213,31 @@
                     @endif
                 </div>
             </div>
-        </div>
     </div>
 </div>
 @endsection
+
+@if(!$order->is_paid)
+@section('scripts')
+<script>
+    // Real-time polling: automatically refreshes page when merchant approves on Telegram
+    let isPollingStatus = false;
+    const paymentCheckTimer = setInterval(() => {
+        if (isPollingStatus) return;
+        isPollingStatus = true;
+        fetch('{{ route("payment.khqr.status", $order->order_number) }}')
+            .then(res => res.json())
+            .then(data => {
+                if (data.paid) {
+                    clearInterval(paymentCheckTimer);
+                    window.location.reload();
+                }
+            })
+            .catch(() => {})
+            .finally(() => {
+                isPollingStatus = false;
+            });
+    }, 2500);
+</script>
+@endsection
+@endif
