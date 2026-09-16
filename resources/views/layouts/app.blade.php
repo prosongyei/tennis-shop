@@ -58,6 +58,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
     <style>
+        html, body { max-width: 100%; overflow-x: hidden; }
         body { font-family: 'Inter', sans-serif; }
         h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Outfit', sans-serif; }
         .glass-nav {
@@ -81,13 +82,13 @@
     <!-- Navigation Header -->
     <header class="sticky top-0 z-50 glass-nav transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
+            <div class="flex items-center justify-between gap-2 h-20 min-w-0">
                 <!-- Logo -->
-                <a href="{{ route('home') }}" class="flex items-center gap-2.5 group shrink-0 mr-4">
-                    <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey Logo" class="w-10 h-10 rounded-full object-contain shadow-md shadow-sky-500/20 border border-sky-400/40 group-hover:scale-105 transition bg-slate-900 p-0.5">
-                    <div>
-                        <span class="font-display font-black text-xl sm:text-2xl tracking-tight text-white group-hover:text-sky-400 transition block leading-tight">TosLengSey</span>
-                        <p class="text-[8px] uppercase font-bold tracking-tight text-slate-400 whitespace-nowrap">Authentic Badminton Store</p>
+                <a href="{{ route('home') }}" class="flex items-center gap-2 group min-w-0 shrink">
+                    <img src="{{ route('brand.logo') }}?v=2" alt="TosLengSey Logo" class="w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-full object-contain shadow-md shadow-sky-500/20 border border-sky-400/40 group-hover:scale-105 transition bg-slate-900 p-0.5">
+                    <div class="min-w-0">
+                        <span class="font-display font-black text-lg sm:text-2xl tracking-tight text-white group-hover:text-sky-400 transition block leading-tight truncate">TosLengSey</span>
+                        <p class="hidden sm:block text-[8px] uppercase font-bold tracking-tight text-slate-400 whitespace-nowrap">Authentic Badminton Store</p>
                     </div>
                 </a>
 
@@ -106,7 +107,7 @@
                 </nav>
 
                 <!-- Search, User, Wishlist, Cart Action Buttons -->
-                <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-1 sm:gap-2.5 shrink-0">
                     <!-- Quick Search Bar -->
                     <form action="{{ route('shop.catalog') }}" method="GET" class="hidden lg:flex items-center relative">
                         <input type="text" name="q" value="{{ request('q') }}" placeholder="Search Yonex, Victor, shoes..." class="bg-slate-900/90 text-xs text-white border border-slate-700/80 rounded-full pl-9 pr-4 py-2 w-44 focus:w-56 focus:outline-none focus:border-sky-400 transition-all placeholder:text-slate-500">
@@ -114,7 +115,7 @@
                     </form>
 
                     <!-- Wishlist Link -->
-                    <a href="{{ route('wishlist.index') }}" class="relative p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1.5" title="View Saved Wishlist">
+                    <a href="{{ route('wishlist.index') }}" class="relative hidden sm:flex p-2 sm:p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition items-center gap-1.5" title="View Saved Wishlist">
                         <i data-lucide="heart" class="w-5 h-5 text-rose-400"></i>
                         <span id="nav-wishlist-badge" class="bg-rose-500 text-white font-bold text-[11px] px-1.5 py-0.5 rounded-full min-w-[19px] text-center {{ ($wishlistCount ?? 0) > 0 ? '' : 'hidden' }}">
                             {{ $wishlistCount ?? 0 }}
@@ -122,7 +123,7 @@
                     </a>
 
                     <!-- Cart Link -->
-                    <a href="{{ route('cart.index') }}" class="relative p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1.5" title="View Shopping Cart">
+                    <a href="{{ route('cart.index') }}" class="relative p-2 sm:p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition flex items-center gap-1.5" title="View Shopping Cart">
                         <i data-lucide="shopping-bag" class="w-5 h-5 text-sky-400"></i>
                         <span id="nav-cart-badge" class="bg-sky-500 text-white font-bold text-[11px] px-1.5 py-0.5 rounded-full min-w-[19px] text-center">
                             {{ auth()->check() && auth()->user()->cart ? auth()->user()->cart->total_quantity : 0 }}
@@ -132,8 +133,8 @@
                     <!-- User Account / Login -->
                     @auth
                         <details class="relative" id="user-menu-details">
-                            <summary class="flex items-center gap-2 p-1.5 pl-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-200 text-sm font-medium transition cursor-pointer list-none select-none">
-                                <span class="max-w-[120px] truncate">{{ auth()->user()->name }}</span>
+                            <summary class="flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 sm:pl-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-200 text-sm font-medium transition cursor-pointer list-none select-none">
+                                <span class="hidden sm:inline max-w-[120px] truncate">{{ auth()->user()->name }}</span>
                                 <div class="w-8 h-8 rounded-lg bg-sky-600 text-white font-bold flex items-center justify-center text-xs">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 </div>
@@ -183,7 +184,7 @@
                         <a href="{{ route('login') }}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-sm font-semibold text-slate-200 hover:text-white transition">
                             <i data-lucide="user" class="w-4 h-4 text-sky-400"></i> Sign In
                         </a>
-                        <a href="{{ route('register') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold shadow-lg shadow-sky-600/20 hover:scale-[1.02] transition">
+                        <a href="{{ route('register') }}" class="inline-flex items-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-sky-600/20 hover:scale-[1.02] transition whitespace-nowrap">
                             Sign Up
                         </a>
                     @endauth
