@@ -68,7 +68,7 @@
                         <!-- Image Container with Heart button & Badge -->
                         <div class="relative aspect-square bg-slate-950/60 p-6 flex items-center justify-center overflow-hidden">
                             <a href="{{ route('shop.product', $product->slug) }}" class="w-full h-full flex items-center justify-center">
-                                <img src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80';" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300">
+                                <img src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300">
                             </a>
 
                             <!-- Brand Badge -->

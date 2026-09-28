@@ -118,6 +118,26 @@ class ProductController extends Controller
             $imagePath = trim($request->input('image'));
         }
 
+        if (empty($imagePath)) {
+            $category = Category::find($validated['category_id']);
+            $catSlug = strtolower($category?->slug ?? '');
+            $catName = strtolower($category?->name ?? '');
+
+            if (str_contains($catSlug, 'shoe') || str_contains($catName, 'shoe')) {
+                $imagePath = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80';
+            } elseif (str_contains($catSlug, 'shuttle') || str_contains($catName, 'shuttle')) {
+                $imagePath = 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=800&auto=format&fit=crop&q=80';
+            } elseif (str_contains($catSlug, 'bag') || str_contains($catName, 'bag')) {
+                $imagePath = 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80';
+            } elseif (str_contains($catSlug, 'string') || str_contains($catName, 'string')) {
+                $imagePath = 'https://images.unsplash.com/photo-1521537634581-0dced2fed2a8?w=800&auto=format&fit=crop&q=80';
+            } elseif (str_contains($catSlug, 'grip') || str_contains($catName, 'grip')) {
+                $imagePath = 'https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&auto=format&fit=crop&q=80';
+            } else {
+                $imagePath = 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80';
+            }
+        }
+
         $specs = [
             'flex' => $validated['spec_flex'] ?? null,
             'frame' => $validated['spec_frame'] ?? null,
@@ -209,6 +229,26 @@ class ProductController extends Controller
             $imagePath = '/uploads/products/' . $filename;
         } elseif ($request->filled('image')) {
             $imagePath = trim($request->input('image'));
+        }
+
+        if (empty($imagePath)) {
+            $category = Category::find($validated['category_id']);
+            $catSlug = strtolower($category?->slug ?? '');
+            $catName = strtolower($category?->name ?? '');
+
+            if (str_contains($catSlug, 'shoe') || str_contains($catName, 'shoe')) {
+                $imagePath = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80';
+            } elseif (str_contains($catSlug, 'shuttle') || str_contains($catName, 'shuttle')) {
+                $imagePath = 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=800&auto=format&fit=crop&q=80';
+            } elseif (str_contains($catSlug, 'bag') || str_contains($catName, 'bag')) {
+                $imagePath = 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80';
+            } elseif (str_contains($catSlug, 'string') || str_contains($catName, 'string')) {
+                $imagePath = 'https://images.unsplash.com/photo-1521537634581-0dced2fed2a8?w=800&auto=format&fit=crop&q=80';
+            } elseif (str_contains($catSlug, 'grip') || str_contains($catName, 'grip')) {
+                $imagePath = 'https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&auto=format&fit=crop&q=80';
+            } else {
+                $imagePath = 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80';
+            }
         }
 
         $specs = [

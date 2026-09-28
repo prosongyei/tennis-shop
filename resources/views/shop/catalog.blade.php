@@ -171,7 +171,7 @@
                                 </button>
 
                                 <a href="{{ route('shop.product', $product->slug) }}" class="block overflow-hidden rounded-2xl bg-slate-950 aspect-square">
-                                    <img src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80';" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                    <img src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                                 </a>
                             </div>
 

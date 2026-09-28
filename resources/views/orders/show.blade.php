@@ -138,8 +138,8 @@
                 @foreach($order->items as $item)
                     <div class="py-4 flex items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-xl bg-slate-950 overflow-hidden shrink-0">
-                                <img src="{{ $item->product?->image ?: 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=200' }}" alt="{{ $item->product_name }}" class="w-full h-full object-cover">
+                            <div class="w-14 h-14 rounded-xl bg-slate-950 overflow-hidden shrink-0 border border-slate-800">
+                                <img src="{{ $item->image_url }}" alt="{{ $item->product_name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover">
                             </div>
                             <div>
                                 <h4 class="font-bold text-white text-sm">{{ $item->product_name }}</h4>

@@ -70,8 +70,8 @@
                     @forelse($products as $prod)
                         <tr class="hover:bg-slate-800/30 transition">
                             <td class="p-4 flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-slate-950 overflow-hidden shrink-0">
-                                    <img src="{{ $prod->image ?: 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=200' }}" alt="{{ $prod->name }}" class="w-full h-full object-cover">
+                                <div class="w-12 h-12 rounded-xl bg-slate-950 overflow-hidden shrink-0 border border-slate-800">
+                                    <img src="{{ $prod->image ?: asset('images/default-product.svg') }}" alt="{{ $prod->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover">
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-white text-sm">{{ $prod->name }}</h4>

@@ -141,12 +141,39 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
                 <div class="sm:col-span-8 space-y-4">
+                    <!-- Quick Presets -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                            ⚡ Quick Choose Equipment Photo Preset
+                        </label>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80', '🏸 Racket Preset')" class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-lime-400 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                                🏸 Racket
+                            </button>
+                            <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80', '👟 Shoes Preset')" class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-lime-400 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                                👟 Shoes
+                            </button>
+                            <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=800&auto=format&fit=crop&q=80', '🪶 Shuttlecock Preset')" class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-lime-400 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                                🪶 Shuttles
+                            </button>
+                            <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80', '🎒 Bag Preset')" class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-lime-400 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                                🎒 Bag
+                            </button>
+                            <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1521537634581-0dced2fed2a8?w=800&auto=format&fit=crop&q=80', '🧵 String Preset')" class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-lime-400 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                                🧵 Strings
+                            </button>
+                            <button type="button" onclick="selectPreset('https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&auto=format&fit=crop&q=80', '🎾 Grip / Acc Preset')" class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-lime-400 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                                🎾 Grips & More
+                            </button>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Image URL (Web Link)</label>
                         <input type="text" id="product-img-url" name="image"
                             value="{{ old('image', (isset($product) && str_starts_with($product->getRawOriginal('image') ?? '', 'http')) ? $product->getRawOriginal('image') : '') }}"
-                            oninput="previewFromUrl(this.value)" placeholder="https://images.unsplash.com/..." class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500 font-mono">
-                        <p class="text-[11px] text-slate-500 mt-1">Paste any direct web image link (JPG, PNG, WebP).</p>
+                            oninput="previewFromUrl(this.value)" placeholder="https://images.unsplash.com/..." class="w-full bg-slate-950 text-white text-sm border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-lime-400 font-mono">
+                        <p class="text-[11px] text-slate-500 mt-1">Paste any direct web image link (JPG, PNG, WebP) or click a preset above.</p>
                     </div>
 
                     <div class="relative flex py-1 items-center">
@@ -158,7 +185,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Upload Local Photo File</label>
                         <input type="file" id="product-img-file" name="image_file" accept="image/*" onchange="previewFromFile(this)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer">
-                        <p class="text-[11px] text-slate-500 mt-1">Direct upload to store server (Max 3MB, saved directly to public storage).</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Direct upload from your computer (Max 3MB, PNG, JPG, WebP).</p>
                     </div>
                 </div>
 
@@ -166,7 +193,7 @@
                 <div class="sm:col-span-4 flex flex-col items-center">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Live Image Preview</p>
                     <div class="w-36 h-36 rounded-2xl bg-slate-950 border-2 border-slate-800 flex items-center justify-center overflow-hidden relative shadow-lg">
-                        <img id="image-preview" src="{{ isset($product) && $product->image ? $product->image : 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=300' }}" alt="Preview" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=300'; document.getElementById('preview-error').classList.remove('hidden');" onload="document.getElementById('preview-error').classList.add('hidden');">
+                        <img id="image-preview" src="{{ isset($product) && $product->image ? $product->image : asset('images/default-product.svg') }}" alt="Preview" class="w-full h-full object-cover" onerror="this.src='{{ asset('images/default-product.svg') }}'; document.getElementById('preview-error').classList.remove('hidden');" onload="document.getElementById('preview-error').classList.add('hidden');">
                         <div id="preview-error" class="absolute inset-0 bg-slate-950/90 text-rose-400 text-[10px] p-2 flex items-center justify-center text-center font-bold hidden">
                             Image link broken or unreachable
                         </div>
@@ -194,12 +221,31 @@
         </div>
 
         <script>
+            function selectPreset(url, label) {
+                const urlInput = document.getElementById('product-img-url');
+                const fileInput = document.getElementById('product-img-file');
+                const preview = document.getElementById('image-preview');
+                const caption = document.getElementById('preview-caption');
+                const errorBox = document.getElementById('preview-error');
+
+                urlInput.value = url;
+                fileInput.value = ''; // clear file selection
+                preview.src = url;
+                caption.innerText = label;
+                errorBox.classList.add('hidden');
+            }
+
             function previewFromUrl(url) {
                 const preview = document.getElementById('image-preview');
                 const caption = document.getElementById('preview-caption');
+                const errorBox = document.getElementById('preview-error');
                 if (url && url.trim() !== '') {
                     preview.src = url.trim();
                     caption.innerText = 'Web URL Loaded';
+                    errorBox.classList.add('hidden');
+                } else {
+                    preview.src = '{{ asset("images/default-product.svg") }}';
+                    caption.innerText = 'Default Preset';
                 }
             }
 
@@ -209,12 +255,39 @@
                     reader.onload = function(e) {
                         document.getElementById('image-preview').src = e.target.result;
                         document.getElementById('preview-caption').innerText = input.files[0].name;
-                        // clear URL input so it doesn't conflict
                         document.getElementById('product-img-url').value = '';
+                        document.getElementById('preview-error').classList.add('hidden');
                     }
                     reader.readAsDataURL(input.files[0]);
                 }
             }
+
+            // Auto-recommend preset when category changes if image is currently blank
+            document.addEventListener('DOMContentLoaded', () => {
+                const catSelect = document.getElementById('category_id_select');
+                if (catSelect) {
+                    catSelect.addEventListener('change', () => {
+                        const urlInput = document.getElementById('product-img-url');
+                        const fileInput = document.getElementById('product-img-file');
+                        if (!urlInput.value && (!fileInput.files || fileInput.files.length === 0)) {
+                            const text = catSelect.options[catSelect.selectedIndex].text.toLowerCase();
+                            if (text.includes('shoe')) {
+                                selectPreset('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80', '👟 Auto Shoes');
+                            } else if (text.includes('shuttle')) {
+                                selectPreset('https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=800&auto=format&fit=crop&q=80', '🪶 Auto Shuttles');
+                            } else if (text.includes('bag')) {
+                                selectPreset('https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80', '🎒 Auto Bag');
+                            } else if (text.includes('string')) {
+                                selectPreset('https://images.unsplash.com/photo-1521537634581-0dced2fed2a8?w=800&auto=format&fit=crop&q=80', '🧵 Auto String');
+                            } else if (text.includes('grip') || text.includes('court') || text.includes('tennis')) {
+                                selectPreset('https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&auto=format&fit=crop&q=80', '🎾 Auto Equipment');
+                            } else {
+                                selectPreset('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80', '🏸 Auto Racket');
+                            }
+                        }
+                    });
+                }
+            });
         </script>
 
         <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-lime-400 hover:bg-lime-300 text-slate-950 font-display font-black text-base shadow-xl shadow-lime-500/20 transition">

@@ -61,7 +61,7 @@
                     <div class="relative w-full h-96 rounded-2xl overflow-hidden bg-slate-950">
                         @foreach($featuredProducts->take(5) as $idx => $prod)
                             <div class="hero-slide absolute inset-0 transition-all duration-700 ease-out {{ $idx === 0 ? 'opacity-100 scale-100 z-10 pointer-events-auto' : 'opacity-0 scale-95 z-0 pointer-events-none' }}" data-slide-index="{{ $idx }}">
-                                <img src="{{ $prod->primary_image_url }}" alt="{{ $prod->name }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80';" class="w-full h-full object-cover">
+                                <img src="{{ $prod->primary_image_url }}" alt="{{ $prod->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover">
                                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/25 to-transparent"></div>
 
                                 <!-- Slide Badges -->
@@ -264,7 +264,7 @@
 
                     <!-- Product Image -->
                     <a href="{{ route('shop.product', $product->slug) }}" class="block overflow-hidden rounded-2xl bg-slate-950/60 aspect-square">
-                        <img src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80';" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <img src="{{ $product->primary_image_url }}" alt="{{ $product->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                     </a>
                 </div>
 

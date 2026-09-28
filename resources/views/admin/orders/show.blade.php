@@ -87,15 +87,20 @@
             <div class="divide-y divide-slate-800">
                 @foreach($order->items as $item)
                     <div class="py-3.5 flex items-center justify-between gap-4">
-                        <div>
-                            <h4 class="font-bold text-white text-sm">{{ $item->product_name }}</h4>
-                            <p class="text-xs text-slate-400">
-                                SKU: <span class="font-mono text-slate-300">{{ $item->sku }}</span>
-                                @if($item->variant_name)
-                                    • Spec: {{ $item->variant_name }}
-                                @endif
-                            </p>
-                            <p class="text-xs text-slate-500 font-mono mt-0.5">${{ number_format($item->unit_price, 2) }} &times; {{ $item->quantity }}</p>
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-xl bg-slate-950 overflow-hidden shrink-0 border border-slate-800">
+                                <img src="{{ $item->image_url }}" alt="{{ $item->product_name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm">{{ $item->product_name }}</h4>
+                                <p class="text-xs text-slate-400">
+                                    SKU: <span class="font-mono text-slate-300">{{ $item->sku }}</span>
+                                    @if($item->variant_name)
+                                        • Spec: {{ $item->variant_name }}
+                                    @endif
+                                </p>
+                                <p class="text-xs text-slate-500 font-mono mt-0.5">${{ number_format($item->unit_price, 2) }} &times; {{ $item->quantity }}</p>
+                            </div>
                         </div>
                         <span class="font-display font-bold text-white font-mono">${{ number_format($item->subtotal, 2) }}</span>
                     </div>

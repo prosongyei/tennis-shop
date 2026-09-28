@@ -22,7 +22,7 @@
         <!-- Left Column: Gallery -->
         <div class="lg:col-span-6 space-y-4">
             <div class="overflow-hidden rounded-3xl bg-slate-950 border border-slate-800 aspect-square relative group">
-                <img id="main-product-image" src="{{ $product->primary_image_url }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&auto=format&fit=crop&q=80';" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <img id="main-product-image" src="{{ $product->primary_image_url }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
 
                 @if($product->has_discount)
                     <div class="absolute top-6 left-6 px-3 py-1.5 rounded-xl bg-rose-500 text-white font-black text-xs uppercase tracking-wider shadow-lg">
@@ -186,7 +186,7 @@
                 @foreach($relatedProducts as $related)
                     <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
                         <a href="{{ route('shop.product', $related->slug) }}" class="block aspect-square rounded-2xl overflow-hidden bg-slate-950 mb-3">
-                            <img src="{{ $related->image ?: 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=600' }}" alt="{{ $related->name }}" class="w-full h-full object-cover hover:scale-105 transition">
+                            <img src="{{ $related->image ?: asset('images/default-product.svg') }}" alt="{{ $related->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover hover:scale-105 transition">
                         </a>
                         <div>
                             <span class="text-[10px] font-bold uppercase text-slate-500">{{ $related->brand ? $related->brand->name : 'Yonex' }}</span>

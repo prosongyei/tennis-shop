@@ -98,7 +98,7 @@
                     @foreach($products as $prod)
                         <div onclick='addToCart(@json($prod))' class="cursor-pointer bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-3 flex flex-col justify-between group transition hover:scale-[1.01] select-none">
                             <div class="aspect-square rounded-xl overflow-hidden bg-slate-950 mb-2 relative">
-                                <img src="{{ $prod->image ?: 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=300' }}" alt="{{ $prod->name }}" class="w-full h-full object-cover group-hover:scale-105 transition">
+                                <img src="{{ $prod->image ?: asset('images/default-product.svg') }}" alt="{{ $prod->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover group-hover:scale-105 transition">
                                 <span class="absolute bottom-1 right-1 bg-slate-950/90 text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded font-bold">
                                     Qty: {{ $prod->stock_quantity }}
                                 </span>

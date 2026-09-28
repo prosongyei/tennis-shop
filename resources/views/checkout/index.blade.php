@@ -269,14 +269,12 @@
                     @foreach($cart->items as $item)
                         <div class="py-3 flex items-center justify-between gap-3 text-xs">
                             <div class="flex items-center gap-3">
-                                <span class="w-6 h-6 rounded-lg bg-slate-800 text-sky-400 font-bold flex items-center justify-center text-[11px] shrink-0">
-                                    {{ $item->quantity }}x
-                                </span>
+                                <div class="w-10 h-10 rounded-xl bg-slate-950 overflow-hidden shrink-0 border border-slate-800">
+                                    <img src="{{ $item->product->image ?: asset('images/default-product.svg') }}" alt="{{ $item->product->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover">
+                                </div>
                                 <div class="overflow-hidden">
-                                    <p class="font-bold text-white truncate max-w-[200px]">{{ $item->product->name }}</p>
-                                    @if($item->variant)
-                                        <p class="text-[10px] text-slate-400">{{ $item->variant->variant_name }}</p>
-                                    @endif
+                                    <p class="font-bold text-white truncate max-w-[190px]">{{ $item->product->name }}</p>
+                                    <p class="text-[10px] text-slate-400 font-mono">{{ $item->quantity }}x @ ${{ number_format($item->unit_price, 2) }} @if($item->variant) • {{ $item->variant->variant_name }} @endif</p>
                                 </div>
                             </div>
                             <span class="font-mono font-bold text-white shrink-0">${{ number_format($item->subtotal, 2) }}</span>

@@ -40,8 +40,8 @@
                         <div class="py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <!-- Product thumbnail & title -->
                             <div class="flex items-center gap-4">
-                                <a href="{{ route('shop.product', $item->product->slug) }}" class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-950 shrink-0">
-                                    <img src="{{ $item->product->image ?: 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=200' }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
+                                <a href="{{ route('shop.product', $item->product->slug) }}" class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-950 shrink-0 border border-slate-800">
+                                    <img src="{{ $item->product->image ?: asset('images/default-product.svg') }}" alt="{{ $item->product->name }}" onerror="this.onerror=null;this.src='{{ asset('images/default-product.svg') }}';" class="w-full h-full object-cover">
                                 </a>
                                 <div>
                                     <span class="text-[10px] font-bold uppercase text-sky-400">{{ $item->product->brand ? $item->product->brand->name : 'Yonex' }}</span>
