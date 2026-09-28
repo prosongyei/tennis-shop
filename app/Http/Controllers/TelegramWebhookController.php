@@ -63,7 +63,13 @@ class TelegramWebhookController extends Controller
             return response()->json(['ok' => true]);
         }
 
-        // 2. Handle Text Messages (/start, /pending, /help, etc.)
+        // 2. Handle Bot added to or removed from group / channel (my_chat_member)
+        if (isset($update['my_chat_member'])) {
+            $this->handleMyChatMember($update['my_chat_member']);
+            return response()->json(['ok' => true]);
+        }
+
+        // 3. Handle Text Messages (/start, /pending, /help, etc.) or bot added to group
         if (isset($update['message'])) {
             $this->handleMessage($update['message'], $botToken);
             return response()->json(['ok' => true]);
@@ -202,6 +208,34 @@ class TelegramWebhookController extends Controller
     }
 
     /**
+     * Handle bot membership changes (e.g. Bot added to Telegram group)
+     */
+    protected function handleMyChatMember(array $myChatMember): void
+    {
+        $chat = $myChatMember['chat'] ?? [];
+        $chatId = $chat['id'] ?? null;
+        $chatType = $chat['type'] ?? '';
+        $newMember = $myChatMember['new_chat_member'] ?? [];
+        $status = $newMember['status'] ?? '';
+
+        if (!$chatId) return;
+
+        // When bot is added as member or administrator to a group or supergroup
+        if (in_array($chatType, ['group', 'supergroup']) && in_array($status, ['member', 'administrator'])) {
+            Setting::set('telegram_invoice_group_id', (string) $chatId, 'telegram');
+            Setting::set('telegram_enabled', '1', 'telegram');
+
+            $chatTitle = htmlspecialchars($chat['title'] ?? 'Invoice Group', ENT_QUOTES, 'UTF-8');
+            $greeting = "🎉 <b>TosLengSey Invoice Channel Connected!</b>\n\n"
+                . "Group <b>{$chatTitle}</b> is now connected as the official <b>Invoice & Order Receipts Channel</b>.\n"
+                . "<b>Group ID:</b> <code>{$chatId}</code>\n\n"
+                . "All customer invoices and payment receipts will be posted here automatically.";
+
+            $this->telegramService->sendToInvoiceGroupDirect((string) $chatId, $greeting);
+        }
+    }
+
+    /**
      * Process text commands (/start, /pending, etc.)
      */
     protected function handleMessage(array $msg, string $botToken): void
@@ -219,12 +253,15 @@ class TelegramWebhookController extends Controller
             Setting::set('telegram_invoice_group_id', (string) $chatId, 'telegram');
             Setting::set('telegram_enabled', '1', 'telegram');
 
-            if ($text === '/start' || $text === '/link') {
+            $cleanCommand = strtolower(explode(' ', explode('@', $text)[0])[0]);
+            $isBotAdded = isset($msg['new_chat_members']) || isset($msg['new_chat_participant']);
+
+            if (in_array($cleanCommand, ['/start', '/link', '/status', '/invoice']) || $isBotAdded) {
                 $groupReply = "🎉 <b>TosLengSey Invoice Channel Connected!</b>\n\n"
                     . "This group is now configured as the <b>Invoice & Order Receipts Channel</b>.\n"
                     . "<b>Group Chat ID:</b> <code>{$chatId}</code>\n\n"
                     . "All customer tax invoices and order receipts will be posted here automatically.";
-                $this->telegramService->sendToInvoiceGroup($groupReply);
+                $this->telegramService->sendToInvoiceGroupDirect((string) $chatId, $groupReply);
             }
             return;
         }

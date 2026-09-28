@@ -408,34 +408,56 @@ class TelegramService
     }
 
     /**
-     * Low-level helper to send to Invoice Group (Bot 2 -> Group, with Bot 1 fallback)
+     * Low-level helper to send to Invoice Group (Bot 2 -> Group, with Admin DM fallback)
      */
     public function sendToInvoiceGroup(string $text, ?array $replyMarkup = null): bool
     {
         $enabled = Setting::get('telegram_enabled', config('services.telegram.enabled', true));
         $groupId = $this->getInvoiceGroupId();
 
-        if (!$enabled || empty($groupId)) {
+        if (!$enabled) {
             return false;
         }
 
-        // Try sending with Bot 2 (@TosLengSey_bot)
         $invoiceBotToken = $this->getInvoiceBotToken();
-        if (!empty($invoiceBotToken)) {
+
+        // 1. Try sending with Bot 2 (@TosLengSey_bot) to configured group
+        if (!empty($groupId) && !empty($invoiceBotToken)) {
             $sent = $this->executeSendMessage($invoiceBotToken, $groupId, $text, $replyMarkup);
             if ($sent) {
                 return true;
             }
-            Log::info("Bot 2 failed to send to group {$groupId}. Falling back to Bot 1 (@TLS_Payment_bot).");
+            Log::info("Bot 2 failed to send to group {$groupId}. Trying Bot 1.");
         }
 
-        // Graceful fallback to Bot 1 (@TLS_Payment_bot) which is already verified in group -5475494678
+        // 2. Try sending with Bot 1 (@TLS_Payment_bot) to group
         $confirmBotToken = $this->getConfirmBotToken();
-        if (!empty($confirmBotToken) && $confirmBotToken !== $invoiceBotToken) {
-            return $this->executeSendMessage($confirmBotToken, $groupId, $text, $replyMarkup);
+        if (!empty($groupId) && !empty($confirmBotToken) && $confirmBotToken !== $invoiceBotToken) {
+            $sent = $this->executeSendMessage($confirmBotToken, $groupId, $text, $replyMarkup);
+            if ($sent) {
+                return true;
+            }
+        }
+
+        // 3. Fallback safeguard: If group is unreachable (chat not found / not added yet),
+        // deliver directly to Admin DM (6646751752) using Bot 2 so no invoice is ever lost!
+        $adminChatId = $this->getConfirmChatId();
+        if (!empty($adminChatId) && !empty($invoiceBotToken)) {
+            Log::info("Group {$groupId} unreachable. Delivering invoice to Admin DM {$adminChatId} via Bot 2.");
+            $fallbackNotice = "⚠️ <i>[Invoice Group not reachable yet — Delivered to your DM via @TosLengSey_bot]</i>\n\n" . $text;
+            return $this->executeSendMessage($invoiceBotToken, $adminChatId, $fallbackNotice, $replyMarkup);
         }
 
         return false;
+    }
+
+    /**
+     * Public direct sender helper for invoice group messages (uses Invoice Bot by default)
+     */
+    public function sendToInvoiceGroupDirect(string $chatId, string $text, ?string $botToken = null, ?array $replyMarkup = null): bool
+    {
+        $token = !empty($botToken) ? $botToken : $this->getInvoiceBotToken();
+        return $this->executeSendMessage($token, $chatId, $text, $replyMarkup);
     }
 
     /**

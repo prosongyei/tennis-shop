@@ -152,13 +152,17 @@ class SettingController extends Controller
 
     public function testTelegramInvoice(TelegramService $telegramService)
     {
-        $testInvoice = "🧾 <b>TEST: INVOICE & RECEIPT GROUP</b>\n"
+        $groupId = $telegramService->getInvoiceGroupId();
+        $invoiceBotToken = $telegramService->getInvoiceBotToken();
+        $adminChatId = $telegramService->getConfirmChatId();
+
+        $testInvoice = "🧾 <b>TEST: INVOICE & RECEIPT CHANNEL</b>\n"
             . "━━━━━━━━━━━━━━━━━━━━━━━━\n"
             . "<b>TOSLENGSEY BADMINTON FLAGSHIP</b>\n"
-            . "This is a test broadcast to verify that your Invoice Group is connected.\n"
-            . "<b>Channel:</b> Invoice & Order Receipts\n"
-            . "<b>Group ID:</b> <code>" . $telegramService->getInvoiceGroupId() . "</code>\n"
-            . "<b>Status:</b> ✅ CONNECTED\n"
+            . "This is a test notification to verify that your Invoice Channel is operational!\n"
+            . "<b>Channel:</b> Digital Invoices & Order Receipts\n"
+            . "<b>Bot:</b> @TosLengSey_bot\n"
+            . "<b>Status:</b> ✅ OPERATIONAL\n"
             . "<b>Time:</b> " . now()->format('d M Y, h:i A') . "\n"
             . "━━━━━━━━━━━━━━━━━━━━━━━━";
 
@@ -170,18 +174,37 @@ class SettingController extends Controller
             ]
         ];
 
-        $sent = $telegramService->sendToInvoiceGroup($testInvoice, $replyMarkup);
+        // 1. Try sending directly to configured group first
+        $sentToGroup = false;
+        if (!empty($groupId)) {
+            $sentToGroup = $telegramService->sendToInvoiceGroupDirect($invoiceBotToken, $groupId, $testInvoice, $replyMarkup);
+        }
 
-        if ($sent) {
+        if ($sentToGroup) {
             return response()->json([
                 'success' => true,
-                'message' => "Test tax invoice sent successfully to Invoice Group (" . $telegramService->getInvoiceGroupId() . ")!",
+                'message' => "Test tax invoice sent successfully to Telegram Group ({$groupId}) via @TosLengSey_bot!",
+            ]);
+        }
+
+        // 2. If group is not accessible, deliver to Admin DM via Bot 2
+        $sentToDm = $telegramService->sendToInvoiceGroupDirect(
+            $invoiceBotToken,
+            $adminChatId,
+            "⚠️ <i>[Group {$groupId} is not reachable by bot yet — Delivered to your DM]</i>\n\n" . $testInvoice,
+            $replyMarkup
+        );
+
+        if ($sentToDm) {
+            return response()->json([
+                'success' => true,
+                'message' => "Delivered test invoice to your Telegram DM ({$adminChatId}) via @TosLengSey_bot! Note: To have invoices sent to a group, please add @TosLengSey_bot to your group and send /start in the group.",
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => "Failed to send to group (" . $telegramService->getInvoiceGroupId() . "). Ensure the bot is added as a member/administrator of the group.",
+            'message' => "Failed to deliver test invoice. Please verify that @TosLengSey_bot is active.",
         ]);
     }
 }
