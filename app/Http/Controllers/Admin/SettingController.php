@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -23,6 +24,11 @@ class SettingController extends Controller
             'bakong_city' => Setting::get('bakong_city', config('services.bakong.city', 'Phnom Penh')),
             'bakong_access_token' => Setting::get('bakong_access_token', config('services.bakong.access_token', '')),
             'bakong_api_url' => Setting::get('bakong_api_url', config('services.bakong.api_url', 'https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5')),
+            'telegram_enabled' => Setting::get('telegram_enabled', '1'),
+            'telegram_confirm_bot_token' => Setting::get('telegram_confirm_bot_token', '8851308730:AAFIs5Dyu4exg6mXw0JLN1jbOuQyvgucrPc'),
+            'telegram_confirm_chat_id' => Setting::get('telegram_confirm_chat_id', '6646751752'),
+            'telegram_invoice_bot_token' => Setting::get('telegram_invoice_bot_token', '8862288371:AAGoz8XBLGz4eacOcIbprOWIn5eNiDAadrw'),
+            'telegram_invoice_group_id' => Setting::get('telegram_invoice_group_id', '-5475494678'),
         ];
 
         return view('admin.settings.index', compact('settings'));
@@ -42,13 +48,20 @@ class SettingController extends Controller
             'bakong_city' => ['required', 'string', 'max:50'],
             'bakong_access_token' => ['nullable', 'string'],
             'bakong_api_url' => ['required', 'url'],
+            'telegram_enabled' => ['nullable'],
+            'telegram_confirm_bot_token' => ['nullable', 'string'],
+            'telegram_confirm_chat_id' => ['nullable', 'string'],
+            'telegram_invoice_bot_token' => ['nullable', 'string'],
+            'telegram_invoice_group_id' => ['nullable', 'string'],
         ]);
+
+        $validated['telegram_enabled'] = $request->has('telegram_enabled') ? '1' : '0';
 
         foreach ($validated as $key => $val) {
             Setting::set($key, (string) ($val ?? ''));
         }
 
-        return redirect()->route('admin.settings.index')->with('success', 'Store & Bakong Bank settings updated successfully!');
+        return redirect()->route('admin.settings.index')->with('success', 'Store, Bakong Gateway & Telegram settings updated successfully!');
     }
 
     public function testBakong()
@@ -104,5 +117,71 @@ class SettingController extends Controller
                 'endpoint' => $apiUrl,
             ]);
         }
+    }
+
+    public function testTelegramConfirm(TelegramService $telegramService)
+    {
+        $testMsg = "🧪 <b>TEST: PAYMENT CONFIRMATION BOT</b>\n\n"
+            . "This is a test notification from TosLengSey Store Settings.\n"
+            . "Your Payment Confirmation Bot is working properly!\n"
+            . "Time: " . now()->format('d M Y, h:i A');
+
+        $replyMarkup = [
+            'inline_keyboard' => [
+                [
+                    ['text' => "✅ Test Button (OK)", 'callback_data' => "test_ping"],
+                    ['text' => "⚙️ Admin Settings", 'url' => $telegramService->getBaseUrl() . '/admin/settings'],
+                ]
+            ]
+        ];
+
+        $sent = $telegramService->sendToConfirmationChat($testMsg, $replyMarkup);
+
+        if ($sent) {
+            return response()->json([
+                'success' => true,
+                'message' => "Test message sent successfully to Admin DM (" . $telegramService->getConfirmChatId() . ") via Confirmation Bot!",
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => "Failed to send to Admin DM (" . $telegramService->getConfirmChatId() . "). Check bot token or verify the admin has messaged the bot.",
+        ]);
+    }
+
+    public function testTelegramInvoice(TelegramService $telegramService)
+    {
+        $testInvoice = "🧾 <b>TEST: INVOICE & RECEIPT GROUP</b>\n"
+            . "━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            . "<b>TOSLENGSEY BADMINTON FLAGSHIP</b>\n"
+            . "This is a test broadcast to verify that your Invoice Group is connected.\n"
+            . "<b>Channel:</b> Invoice & Order Receipts\n"
+            . "<b>Group ID:</b> <code>" . $telegramService->getInvoiceGroupId() . "</code>\n"
+            . "<b>Status:</b> ✅ CONNECTED\n"
+            . "<b>Time:</b> " . now()->format('d M Y, h:i A') . "\n"
+            . "━━━━━━━━━━━━━━━━━━━━━━━━";
+
+        $replyMarkup = [
+            'inline_keyboard' => [
+                [
+                    ['text' => "🏸 Visit Store", 'url' => $telegramService->getBaseUrl() . '/shop'],
+                ]
+            ]
+        ];
+
+        $sent = $telegramService->sendToInvoiceGroup($testInvoice, $replyMarkup);
+
+        if ($sent) {
+            return response()->json([
+                'success' => true,
+                'message' => "Test tax invoice sent successfully to Invoice Group (" . $telegramService->getInvoiceGroupId() . ")!",
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => "Failed to send to group (" . $telegramService->getInvoiceGroupId() . "). Ensure the bot is added as a member/administrator of the group.",
+        ]);
     }
 }

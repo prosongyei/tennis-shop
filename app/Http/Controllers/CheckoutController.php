@@ -24,10 +24,7 @@ class CheckoutController extends Controller
 
     protected function getActiveCart(Request $request): Cart
     {
-        if (Auth::check()) {
-            return Cart::firstOrCreate(['user_id' => Auth::id()]);
-        }
-        return Cart::firstOrCreate(['session_id' => $request->session()->getId(), 'user_id' => null]);
+        return Cart::getActiveCart($request);
     }
 
     public function index(Request $request)
@@ -71,12 +68,14 @@ class CheckoutController extends Controller
             $request->merge(['customer_phone' => $cleanPhone]);
         }
 
+        $isPickup = $request->input('delivery_method') === 'pickup';
+
         $rules = [
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_phone' => ['required', 'regex:/^[0-9]+$/', 'min:8', 'max:15'],
             'customer_email' => ['nullable', 'email', 'max:255'],
-            'province_city' => ['required', 'string'],
-            'delivery_address' => ['required', 'string', 'max:500'],
+            'province_city' => [$isPickup ? 'nullable' : 'required', 'string'],
+            'delivery_address' => [$isPickup ? 'nullable' : 'required', 'string', 'max:500'],
             'delivery_method' => ['required', 'in:delivery,pickup'],
             'payment_method' => ['required', 'in:khqr,credit_card,cash_on_delivery,cod'],
             'customer_note' => ['nullable', 'string', 'max:500'],
@@ -103,9 +102,13 @@ class CheckoutController extends Controller
             $validated['payment_method'] = 'cash_on_delivery';
         }
 
-        // Calculate delivery fee
-        $deliveryFee = 0.00;
-        if ($validated['delivery_method'] === 'delivery') {
+        // Handle Store Pickup defaults
+        if ($validated['delivery_method'] === 'pickup') {
+            $validated['delivery_address'] = !empty($validated['delivery_address']) ? $validated['delivery_address'] : 'Store Pickup (TosLengSey Sen Sok Flagship, St. 2004)';
+            $validated['province_city'] = $validated['province_city'] ?? 'Phnom Penh';
+            $deliveryFee = 0.00;
+        } else {
+            // Calculate delivery fee
             $deliveryFee = ($validated['province_city'] === 'Phnom Penh') ? 1.50 : 2.50;
         }
 

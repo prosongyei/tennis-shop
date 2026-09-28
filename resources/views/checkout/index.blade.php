@@ -349,11 +349,24 @@
 
     function updateDelivery(method) {
         const container = document.getElementById('address-container');
+        const addressInput = document.getElementById('delivery_address');
         if (method === 'pickup') {
             currentDeliveryFee = 0.00;
             container.style.display = 'none';
+            if (addressInput) {
+                addressInput.required = false;
+                if (!addressInput.value) {
+                    addressInput.value = 'Store Pickup (TosLengSey Sen Sok Flagship, St. 2004)';
+                }
+            }
         } else {
             container.style.display = 'block';
+            if (addressInput) {
+                addressInput.required = true;
+                if (addressInput.value.includes('Store Pickup')) {
+                    addressInput.value = '';
+                }
+            }
             updateProvinceFee(document.getElementById('province_city').value);
         }
         recalculate();
@@ -397,11 +410,9 @@
                         return false;
                     }
                     btn.dataset.submitting = 'true';
-                    btn.disabled = true;
-                    btn.classList.add('opacity-75', 'pointer-events-none');
+                    btn.classList.add('opacity-75', 'cursor-not-allowed');
                     const span = btn.querySelector('span');
                     if (span) span.innerText = 'Submitting Order...';
-                    form.submit();
                 }
             });
         }

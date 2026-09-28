@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Setting;
+use App\Services\InventoryService;
 use App\Services\PaymentService;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
@@ -15,11 +16,16 @@ class TelegramWebhookController extends Controller
 {
     protected PaymentService $paymentService;
     protected TelegramService $telegramService;
+    protected InventoryService $inventoryService;
 
-    public function __construct(PaymentService $paymentService, TelegramService $telegramService)
-    {
+    public function __construct(
+        PaymentService $paymentService,
+        TelegramService $telegramService,
+        InventoryService $inventoryService
+    ) {
         $this->paymentService = $paymentService;
         $this->telegramService = $telegramService;
+        $this->inventoryService = $inventoryService;
     }
 
     /**
@@ -27,18 +33,21 @@ class TelegramWebhookController extends Controller
      */
     public function handle(Request $request)
     {
-        $botToken = Setting::get('telegram_bot_token', config('services.telegram.bot_token', '8851308730:AAFIs5Dyu4exg6mXw0JLN1jbOuQyvgucrPc'));
+        $botToken = $this->telegramService->getConfirmBotToken();
 
         // If accessed via GET, check webhook status and return info
         if ($request->isMethod('get')) {
             try {
                 $info = Http::get("https://api.telegram.org/bot{$botToken}/getWebhookInfo")->json();
-                $savedChatId = Setting::get('telegram_chat_id', config('services.telegram.chat_id'));
+                $confirmChatId = $this->telegramService->getConfirmChatId();
+                $invoiceGroupId = $this->telegramService->getInvoiceGroupId();
+
                 return response()->json([
                     'status' => 'ok',
-                    'bot' => 'Confirmation_buddy (@TLS_Payment_bot)',
+                    'confirmation_bot' => 'Confirmation_buddy (@TLS_Payment_bot)',
+                    'invoice_group_id' => $invoiceGroupId,
+                    'admin_confirm_chat_id' => $confirmChatId,
                     'webhook' => $info['result'] ?? $info,
-                    'saved_admin_chat_id' => $savedChatId ?: 'Not registered yet (Send /start to @TLS_Payment_bot in Telegram to link your phone!)',
                 ]);
             } catch (\Throwable $e) {
                 return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
@@ -71,12 +80,14 @@ class TelegramWebhookController extends Controller
         $callbackId = $callback['id'] ?? '';
         $data = $callback['data'] ?? '';
         $message = $callback['message'] ?? [];
-        $chatId = $message['chat']['id'] ?? null;
+        $chat = $message['chat'] ?? [];
+        $chatId = $chat['id'] ?? null;
+        $chatType = $chat['type'] ?? 'private';
         $messageId = $message['message_id'] ?? null;
 
-        // Auto-save chat ID
-        if ($chatId) {
-            Setting::set('telegram_chat_id', (string) $chatId, 'telegram');
+        // Auto-save confirm chat ID if private message from admin
+        if ($chatId && $chatType === 'private') {
+            Setting::set('telegram_confirm_chat_id', (string) $chatId, 'telegram');
             Setting::set('telegram_enabled', '1', 'telegram');
         }
 
@@ -95,11 +106,11 @@ class TelegramWebhookController extends Controller
                 return;
             }
 
-            // Mark order as Paid & Confirmed
+            // Mark order as Paid & Confirmed (this dispatches payment notice to Invoice Group automatically)
             $transactionId = 'TG-PAY-' . strtoupper(Str::random(8));
             $this->paymentService->markOrderAsPaid(
                 $order,
-                'khqr',
+                $order->payment_method ?: 'khqr',
                 $transactionId,
                 'Verified and confirmed by Admin via Telegram Bot',
                 null
@@ -108,32 +119,30 @@ class TelegramWebhookController extends Controller
             // Pop up toast on admin's phone
             $this->answerCallback($botToken, $callbackId, "✅ Order #{$orderNumber} confirmed as PAID!", false);
 
-            // Edit Telegram message to update status and remove action buttons
+            // Edit Telegram confirmation message to update status and remove action buttons
             $safeCustomerName = htmlspecialchars($order->customer_name, ENT_QUOTES, 'UTF-8');
             $safeCustomerPhone = htmlspecialchars($order->customer_phone, ENT_QUOTES, 'UTF-8');
             $newText = "✅ <b>PAYMENT CONFIRMED & APPROVED!</b>\n\n"
                 . "<b>Order:</b> #{$order->order_number}\n"
-                . "<b>Customer:</b> {$safeCustomerName} ({$safeCustomerPhone})\n"
+                . "<b>Customer:</b> {$safeCustomerName} (<code>{$safeCustomerPhone}</code>)\n"
                 . "<b>Total Paid:</b> <b>$" . number_format($order->total_amount, 2) . "</b>\n"
                 . "<b>Method:</b> " . strtoupper(str_replace('_', ' ', $order->payment_method)) . "\n"
                 . "<b>Confirmed At:</b> " . now()->format('d M Y, h:i A') . "\n"
                 . "<b>Status:</b> PAID & CONFIRMED\n\n"
-                . "<i>Customer screen has been automatically updated to Confirmed.</i>";
+                . "<i>Customer screen has been updated and receipt posted to the Invoice Group.</i>";
 
             $updatedButtons = [
                 'inline_keyboard' => [
                     [
-                        ['text' => "📄 View Invoice", 'url' => $this->telegramService->getInvoiceUrl($order->order_number)],
+                        ['text' => "📄 View Digital Invoice", 'url' => $this->telegramService->getInvoiceUrl($order->order_number)],
                         ['text' => "⚙️ Admin Orders", 'url' => $this->telegramService->getAdminOrdersUrl()],
                     ]
                 ]
             ];
 
             if (isset($message['photo'])) {
-                // If it was a photo message
                 $this->editMessageCaption($botToken, $chatId, $messageId, $newText, $updatedButtons);
             } else {
-                // Regular text message
                 $this->editMessageText($botToken, $chatId, $messageId, $newText, $updatedButtons);
             }
 
@@ -148,7 +157,24 @@ class TelegramWebhookController extends Controller
             if ($order) {
                 $order->update([
                     'payment_status' => 'failed',
+                    'order_status' => 'cancelled',
                 ]);
+
+                // Restore stock
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        try {
+                            $this->inventoryService->restoreStock(
+                                $item->product,
+                                $item->variant,
+                                $item->quantity,
+                                "Rejected via Telegram Bot",
+                                'rejection',
+                                $order->id
+                            );
+                        } catch (\Throwable $e) {}
+                    }
+                }
 
                 $this->answerCallback($botToken, $callbackId, "❌ Payment rejected for Order #{$orderNumber}.", false);
 
@@ -157,7 +183,7 @@ class TelegramWebhookController extends Controller
                     . "<b>Order:</b> #{$order->order_number}\n"
                     . "<b>Customer:</b> {$safeCustName}\n"
                     . "<b>Amount:</b> $" . number_format($order->total_amount, 2) . "\n"
-                    . "<b>Status:</b> PAYMENT FAILED / REJECTED\n"
+                    . "<b>Status:</b> PAYMENT FAILED / CANCELLED\n"
                     . "<b>Time:</b> " . now()->format('d M Y, h:i A');
 
                 if (isset($message['photo'])) {
@@ -165,6 +191,9 @@ class TelegramWebhookController extends Controller
                 } else {
                     $this->editMessageText($botToken, $chatId, $messageId, $rejectText);
                 }
+
+                // Notify Invoice Group
+                $this->telegramService->sendToInvoiceGroup("❌ <b>INVOICE #{$order->order_number} REJECTED</b>\n\nPayment for order #{$order->order_number} was rejected by store manager.");
             }
             return;
         }
@@ -177,25 +206,42 @@ class TelegramWebhookController extends Controller
      */
     protected function handleMessage(array $msg, string $botToken): void
     {
-        $chatId = $msg['chat']['id'] ?? null;
+        $chat = $msg['chat'] ?? [];
+        $chatId = $chat['id'] ?? null;
+        $chatType = $chat['type'] ?? 'private';
         $text = trim($msg['text'] ?? '');
         $senderName = $msg['from']['first_name'] ?? 'Admin';
 
         if (!$chatId) return;
 
-        // Automatically store the chat ID so all order alerts go here
-        Setting::set('telegram_chat_id', (string) $chatId, 'telegram');
+        // If sent inside a GROUP: update telegram_invoice_group_id
+        if ($chatType === 'group' || $chatType === 'supergroup') {
+            Setting::set('telegram_invoice_group_id', (string) $chatId, 'telegram');
+            Setting::set('telegram_enabled', '1', 'telegram');
+
+            if ($text === '/start' || $text === '/link') {
+                $groupReply = "🎉 <b>TosLengSey Invoice Channel Connected!</b>\n\n"
+                    . "This group is now configured as the <b>Invoice & Order Receipts Channel</b>.\n"
+                    . "<b>Group Chat ID:</b> <code>{$chatId}</code>\n\n"
+                    . "All customer tax invoices and order receipts will be posted here automatically.";
+                $this->telegramService->sendToInvoiceGroup($groupReply);
+            }
+            return;
+        }
+
+        // If sent in PRIVATE DM: update telegram_confirm_chat_id
+        Setting::set('telegram_confirm_chat_id', (string) $chatId, 'telegram');
         Setting::set('telegram_enabled', '1', 'telegram');
 
         if ($text === '/start') {
-            $welcome = "👋 <b>Hello {$senderName}! Welcome to TosLengSey Store Confirmation Bot.</b>\n\n"
-                . "✅ <b>Your Telegram is now connected!</b>\n"
-                . "<b>Chat ID:</b> <code>{$chatId}</code>\n\n"
-                . "📱 Whenever a customer places an order or pays via ABA KHQR, you will receive an alert here with a <b>[ ✅ Confirm Payment ]</b> button.\n\n"
-                . "When you verify the money in your phone's banking app, simply tap the button and the customer's order will immediately be confirmed on the website!\n\n"
+            $welcome = "👋 <b>Hello {$senderName}! Welcome to TosLengSey Store Payment Confirmation Bot.</b>\n\n"
+                . "✅ <b>Your Telegram DM is now connected as the Payment Approval Bot!</b>\n"
+                . "<b>Admin Chat ID:</b> <code>{$chatId}</code>\n\n"
+                . "📱 Whenever a customer places an order or transfers via ABA KHQR, you will receive an alert here with a <b>[ ✅ Confirm Payment ]</b> button.\n\n"
+                . "🧾 Complete customer tax invoices will be sent separately to the <b>Invoice Group</b>.\n\n"
                 . "<b>Useful Commands:</b>\n"
                 . "• /pending - View orders waiting for confirmation\n"
-                . "• /status - Check store connection";
+                . "• /status - Check store bot status";
 
             $this->sendDirectMessage($botToken, $chatId, $welcome);
             return;
@@ -239,15 +285,22 @@ class TelegramWebhookController extends Controller
         if ($text === '/status') {
             $orderCount = Order::count();
             $paidCount = Order::where('payment_status', 'paid')->count();
+            $invoiceGroup = $this->telegramService->getInvoiceGroupId();
+
             $this->sendDirectMessage(
                 $botToken,
                 $chatId,
-                "📊 <b>Store Bot Status: ACTIVE</b>\n\n• Store: TosLengSey Badminton Flagship\n• Total Orders: {$orderCount}\n• Paid Orders: {$paidCount}\n• Connected Chat ID: <code>{$chatId}</code>"
+                "📊 <b>TosLengSey Bot System: ACTIVE</b>\n\n"
+                . "• Store: TosLengSey Badminton Flagship\n"
+                . "• Total Orders: {$orderCount}\n"
+                . "• Paid Orders: {$paidCount}\n"
+                . "• Confirmation Admin DM: <code>{$chatId}</code>\n"
+                . "• Invoice Group: <code>{$invoiceGroup}</code>"
             );
             return;
         }
 
-        // Generic reply for any other message
+        // Generic reply
         $this->sendDirectMessage(
             $botToken,
             $chatId,

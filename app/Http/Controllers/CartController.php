@@ -16,32 +16,7 @@ class CartController extends Controller
      */
     protected function getActiveCart(Request $request): Cart
     {
-        $sessionId = $request->session()->getId();
-
-        if (Auth::check()) {
-            $user = Auth::user();
-            $cart = Cart::firstOrCreate(['user_id' => $user->id]);
-
-            // Merge guest session cart if user previously had items before login
-            $guestCart = Cart::where('session_id', $sessionId)->whereNull('user_id')->first();
-            if ($guestCart && $guestCart->id !== $cart->id) {
-                foreach ($guestCart->items as $item) {
-                    $existing = $cart->items()->where('product_id', $item->product_id)
-                        ->where('product_variant_id', $item->product_variant_id)
-                        ->first();
-                    if ($existing) {
-                        $existing->update(['quantity' => $existing->quantity + $item->quantity]);
-                    } else {
-                        $item->update(['cart_id' => $cart->id]);
-                    }
-                }
-                $guestCart->delete();
-            }
-
-            return $cart;
-        }
-
-        return Cart::firstOrCreate(['session_id' => $sessionId, 'user_id' => null]);
+        return Cart::getActiveCart($request);
     }
 
     public function index(Request $request)

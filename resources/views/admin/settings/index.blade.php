@@ -135,6 +135,82 @@
             </div>
         </div>
 
+        <!-- Telegram Dual-Bot Notification Channels Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-black text-base border border-sky-500/30">
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-display font-bold text-lg text-white">Telegram Dual-Bot & Group Channels</h2>
+                        <p class="text-xs text-slate-400">Separated channels for payment confirmation approval and digital customer tax invoices.</p>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="telegram_enabled" value="1" {{ !empty($settings['telegram_enabled']) ? 'checked' : '' }} class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+                    <span class="ml-3 text-xs font-bold text-slate-300">Enabled</span>
+                </label>
+            </div>
+
+            <!-- Bot 1: Payment Confirmation Bot -->
+            <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                    <div class="flex items-center gap-2.5">
+                        <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-[10px] uppercase tracking-wider">Bot 1</span>
+                        <h3 class="font-display font-bold text-white text-sm">Payment Confirmation Bot (@TLS_Payment_bot)</h3>
+                    </div>
+                    <button type="button" onclick="testTelegramConfirm()" id="btn-test-confirm" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <span>Test Confirmation Bot</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Confirmation Bot Token</label>
+                        <input type="text" name="telegram_confirm_bot_token" value="{{ old('telegram_confirm_bot_token', $settings['telegram_confirm_bot_token']) }}" class="w-full bg-slate-900 text-white text-xs font-mono border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-sky-400 transition" placeholder="8851308730:AAFIs5Dyu4exg6mXw0JLN1jbOuQyvgucrPc">
+                        <p class="text-[11px] text-slate-500 mt-1">Bot token for @TLS_Payment_bot used to verify payments.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Admin / Cashier Confirmation Chat ID</label>
+                        <input type="text" name="telegram_confirm_chat_id" value="{{ old('telegram_confirm_chat_id', $settings['telegram_confirm_chat_id']) }}" class="w-full bg-slate-900 text-white text-xs font-mono border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-sky-400 transition" placeholder="6646751752">
+                        <p class="text-[11px] text-slate-500 mt-1">Receives interactive [ ✅ Confirm Payment ] and [ ❌ Reject ] buttons.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot 2: Digital Invoice & Receipts Group -->
+            <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                    <div class="flex items-center gap-2.5">
+                        <span class="px-2 py-0.5 rounded-lg bg-sky-500/20 text-sky-400 font-bold text-[10px] uppercase tracking-wider">Bot 2 / Group</span>
+                        <h3 class="font-display font-bold text-white text-sm">Tax Invoice & Order Receipts Group</h3>
+                    </div>
+                    <button type="button" onclick="testTelegramInvoice()" id="btn-test-invoice" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i data-lucide="receipt" class="w-3.5 h-3.5 text-sky-400"></i>
+                        <span>Test Invoice Group</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Invoice Bot Token</label>
+                        <input type="text" name="telegram_invoice_bot_token" value="{{ old('telegram_invoice_bot_token', $settings['telegram_invoice_bot_token']) }}" class="w-full bg-slate-900 text-white text-xs font-mono border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-sky-400 transition" placeholder="8862288371:AAGoz8XBLGz4eacOcIbprOWIn5eNiDAadrw">
+                        <p class="text-[11px] text-slate-500 mt-1">Bot token for @TosLengSey_bot (falls back to Bot 1 if not in group).</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Invoice Group ID</label>
+                        <input type="text" name="telegram_invoice_group_id" value="{{ old('telegram_invoice_group_id', $settings['telegram_invoice_group_id']) }}" class="w-full bg-slate-900 text-white text-xs font-mono border border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:border-sky-400 transition" placeholder="-5475494678">
+                        <p class="text-[11px] text-slate-500 mt-1">Group chat ID where full customer invoices and item breakdowns are posted.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="flex items-center justify-end gap-4">
             <button type="submit" class="px-8 py-3.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm shadow-lg shadow-sky-600/20 transition">
                 Save All Settings
@@ -180,6 +256,78 @@
                 box.classList.remove('hidden');
                 box.className = "p-4 rounded-2xl border text-sm flex items-start gap-3 bg-rose-500/10 border-rose-500/30 text-rose-400";
                 title.innerText = "Connection Error";
+                msg.innerText = err.message;
+            });
+    }
+
+    function testTelegramConfirm() {
+        const btn = document.getElementById('btn-test-confirm');
+        const box = document.getElementById('test-result-box');
+        const title = document.getElementById('test-result-title');
+        const msg = document.getElementById('test-result-msg');
+
+        btn.disabled = true;
+        btn.classList.add('opacity-75');
+
+        fetch('{{ route("admin.settings.test-telegram-confirm") }}')
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75');
+                box.classList.remove('hidden');
+
+                if (data.success) {
+                    box.className = "p-4 rounded-2xl border text-sm flex items-start gap-3 bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+                    title.innerText = "Confirmation Bot Ping Sent!";
+                    msg.innerText = data.message;
+                } else {
+                    box.className = "p-4 rounded-2xl border text-sm flex items-start gap-3 bg-rose-500/10 border-rose-500/30 text-rose-400";
+                    title.innerText = "Confirmation Bot Test Failed";
+                    msg.innerText = data.message;
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75');
+                box.classList.remove('hidden');
+                box.className = "p-4 rounded-2xl border text-sm flex items-start gap-3 bg-rose-500/10 border-rose-500/30 text-rose-400";
+                title.innerText = "Test Error";
+                msg.innerText = err.message;
+            });
+    }
+
+    function testTelegramInvoice() {
+        const btn = document.getElementById('btn-test-invoice');
+        const box = document.getElementById('test-result-box');
+        const title = document.getElementById('test-result-title');
+        const msg = document.getElementById('test-result-msg');
+
+        btn.disabled = true;
+        btn.classList.add('opacity-75');
+
+        fetch('{{ route("admin.settings.test-telegram-invoice") }}')
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75');
+                box.classList.remove('hidden');
+
+                if (data.success) {
+                    box.className = "p-4 rounded-2xl border text-sm flex items-start gap-3 bg-sky-500/10 border-sky-500/30 text-sky-400";
+                    title.innerText = "Invoice Group Ping Sent!";
+                    msg.innerText = data.message;
+                } else {
+                    box.className = "p-4 rounded-2xl border text-sm flex items-start gap-3 bg-rose-500/10 border-rose-500/30 text-rose-400";
+                    title.innerText = "Invoice Group Test Failed";
+                    msg.innerText = data.message;
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75');
+                box.classList.remove('hidden');
+                box.className = "p-4 rounded-2xl border text-sm flex items-start gap-3 bg-rose-500/10 border-rose-500/30 text-rose-400";
+                title.innerText = "Test Error";
                 msg.innerText = err.message;
             });
     }

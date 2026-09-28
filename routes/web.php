@@ -171,8 +171,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('categories', [AdminProductController::class, 'storeCategory'])->name('categories.store');
     Route::post('brands', [AdminProductController::class, 'storeBrand'])->name('brands.store');
 
-    // Store & Bank Gateway Settings
+    // Store, Bank Gateway & Telegram Settings
     Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [AdminSettingController::class, 'update'])->name('settings.update');
     Route::get('settings/test-bakong', [AdminSettingController::class, 'testBakong'])->name('settings.test-bakong');
+    Route::get('settings/test-telegram-confirm', [AdminSettingController::class, 'testTelegramConfirm'])->name('settings.test-telegram-confirm');
+    Route::get('settings/test-telegram-invoice', [AdminSettingController::class, 'testTelegramInvoice'])->name('settings.test-telegram-invoice');
 });

@@ -222,6 +222,20 @@ class OrderService
 
             return $order;
         });
+
+        // Send Telegram invoice to group for POS sale
+        try {
+            $freshPosOrder = $order->fresh(['items.product', 'items.variant']);
+            if ($paymentMethod === 'khqr') {
+                $this->telegramService->sendNewOrderNotifications($freshPosOrder);
+            } else {
+                $this->telegramService->sendInvoiceToGroup($freshPosOrder);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("POS Telegram notification failed: " . $e->getMessage());
+        }
+
+        return $order;
     }
 
     /**

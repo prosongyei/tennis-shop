@@ -117,26 +117,31 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
-                // Guarantee Telegram bot settings exist
+                // Guarantee Telegram bot settings exist (Separated: Confirmation Bot vs Invoice Group)
                 if (Schema::hasTable('settings')) {
                     \App\Models\Setting::updateOrCreate(
-                        ['key' => 'telegram_bot_token'],
-                        ['value' => '8851308730:AAFIs5Dyu4exg6mXw0JLN1jbOuQyvgucrPc', 'group' => 'telegram', 'description' => 'Confirmation Buddy Bot Token']
+                        ['key' => 'telegram_enabled'],
+                        ['value' => '1', 'group' => 'telegram', 'description' => 'Enable Telegram Order & Invoice Alerts']
                     );
                     \App\Models\Setting::updateOrCreate(
-                        ['key' => 'telegram_enabled'],
-                        ['value' => '1', 'group' => 'telegram', 'description' => 'Enable Telegram Order & Payment Alerts']
+                        ['key' => 'telegram_confirm_bot_token'],
+                        ['value' => '8851308730:AAFIs5Dyu4exg6mXw0JLN1jbOuQyvgucrPc', 'group' => 'telegram', 'description' => 'Bot 1: Payment Confirmation Bot Token (@TLS_Payment_bot)']
                     );
-                    $existingChat = \App\Models\Setting::where('key', 'telegram_chat_id')->first();
-                    if (!$existingChat || empty($existingChat->value) || $existingChat->value === '6646751752') {
-                        \App\Models\Setting::updateOrCreate(
-                            ['key' => 'telegram_chat_id'],
-                            ['value' => '-5475494678', 'group' => 'telegram', 'description' => 'Primary Telegram Alert Group Chat ID']
-                        );
-                    }
+                    \App\Models\Setting::updateOrCreate(
+                        ['key' => 'telegram_confirm_chat_id'],
+                        ['value' => '6646751752', 'group' => 'telegram', 'description' => 'Bot 1: Store Admin / Cashier Chat ID for Payment Confirmation']
+                    );
+                    \App\Models\Setting::updateOrCreate(
+                        ['key' => 'telegram_invoice_bot_token'],
+                        ['value' => '8862288371:AAGoz8XBLGz4eacOcIbprOWIn5eNiDAadrw', 'group' => 'telegram', 'description' => 'Bot 2: Store Invoice Bot Token (@TosLengSey_bot)']
+                    );
+                    \App\Models\Setting::updateOrCreate(
+                        ['key' => 'telegram_invoice_group_id'],
+                        ['value' => '-5475494678', 'group' => 'telegram', 'description' => 'Bot 2 / Group: Digital Invoices & Receipts Group ID']
+                    );
                 }
 
-                Cache::put('core_users_verified_v4', true, now()->addDay());
+                Cache::put('core_users_verified_v5', true, now()->addDay());
             }
         } catch (\Throwable $e) {
             // Silently ignore if DB connection isn't ready
