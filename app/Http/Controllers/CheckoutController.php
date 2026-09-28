@@ -78,7 +78,7 @@ class CheckoutController extends Controller
             'province_city' => ['required', 'string'],
             'delivery_address' => ['required', 'string', 'max:500'],
             'delivery_method' => ['required', 'in:delivery,pickup'],
-            'payment_method' => ['required', 'in:khqr,credit_card,cash_on_delivery'],
+            'payment_method' => ['required', 'in:khqr,credit_card,cash_on_delivery,cod'],
             'customer_note' => ['nullable', 'string', 'max:500'],
             'coupon_code' => ['nullable', 'string', 'max:50'],
         ];
@@ -98,6 +98,10 @@ class CheckoutController extends Controller
         ];
 
         $validated = $request->validate($rules, $messages);
+
+        if ($validated['payment_method'] === 'cod') {
+            $validated['payment_method'] = 'cash_on_delivery';
+        }
 
         // Calculate delivery fee
         $deliveryFee = 0.00;

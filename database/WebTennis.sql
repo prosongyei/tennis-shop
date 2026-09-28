@@ -236,7 +236,7 @@ CREATE TABLE `orders` (
   `discount_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `delivery_fee` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total_amount` decimal(10,2) NOT NULL,
-  `payment_method` enum('khqr','cash_delivery','cash_store','bank_transfer') NOT NULL,
+  `payment_method` varchar(50) NOT NULL DEFAULT 'khqr',
   `payment_status` enum('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
   `order_status` enum('pending','confirmed','processing','shipped','delivered','cancelled') NOT NULL DEFAULT 'pending',
   `source` enum('web','pos') NOT NULL DEFAULT 'web',

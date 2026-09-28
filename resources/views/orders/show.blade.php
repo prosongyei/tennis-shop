@@ -72,6 +72,27 @@
                 </a>
             </div>
         </div>
+    @elseif(in_array($order->payment_method, ['cash_on_delivery', 'cod']))
+        <!-- Cash on Delivery Notice -->
+        <div class="mb-8 p-5 sm:p-6 rounded-3xl bg-sky-950/40 border border-sky-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-sky-500/10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/30 text-2xl">
+                    💵
+                </div>
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h4 class="font-bold text-base text-white">Cash on Delivery (COD)</h4>
+                        <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30">PAY ON ARRIVAL</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-1">
+                        Please prepare <strong>${{ number_format($order->total_amount, 2) }}</strong> in cash upon package arrival. Our delivery team will collect payment when handing over your items.
+                    </p>
+                </div>
+            </div>
+            <div class="text-xs font-bold px-3.5 py-2 rounded-xl bg-sky-500/10 text-sky-300 border border-sky-500/30 shrink-0">
+                Due: ${{ number_format($order->total_amount, 2) }}
+            </div>
+        </div>
     @endif
 
     <!-- Fulfillment Status Steps -->
@@ -217,7 +238,7 @@
 </div>
 @endsection
 
-@if(!$order->is_paid)
+@if(!$order->is_paid && $order->payment_method === 'khqr')
 @section('scripts')
 <script>
     // Real-time polling: automatically refreshes page when merchant approves on Telegram

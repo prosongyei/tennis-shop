@@ -68,6 +68,17 @@
                 </button>
             </form>
 
+            <!-- Quick Auto-Fill Helper -->
+            <div class="mt-4 p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-between text-xs">
+                <div>
+                    <p class="font-bold text-indigo-300">Default Admin Credentials</p>
+                    <p class="text-[11px] text-slate-400 font-mono mt-0.5">admin@badminton.com • MyTeamMy099</p>
+                </div>
+                <button type="button" onclick="fillAdminCredentials()" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] shadow transition cursor-pointer">
+                    Auto Fill
+                </button>
+            </div>
+
             <div class="mt-6 pt-6 border-t border-slate-800 text-center text-xs text-slate-500 flex items-center justify-between">
                 <a href="{{ route('home') }}" class="text-slate-400 hover:text-sky-400 transition flex items-center gap-1">
                     <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Storefront
@@ -77,6 +88,11 @@
         </div>
     </div>
     <script>
+        function fillAdminCredentials() {
+            document.getElementById('email').value = 'admin@badminton.com';
+            document.getElementById('password').value = 'MyTeamMy099';
+        }
+
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             if (!input) return;

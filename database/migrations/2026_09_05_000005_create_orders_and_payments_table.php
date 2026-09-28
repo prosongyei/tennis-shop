@@ -30,7 +30,7 @@ return new class extends Migration
             $table->decimal('total_amount', 10, 2);
 
             // Payment Details
-            $table->enum('payment_method', ['khqr', 'bank_transfer', 'cod', 'cash_store'])->default('khqr');
+            $table->string('payment_method', 50)->default('khqr');
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'cancelled', 'refunded'])->default('pending');
             $table->text('khqr_string')->nullable();
             $table->string('khqr_md5')->nullable()->index();
